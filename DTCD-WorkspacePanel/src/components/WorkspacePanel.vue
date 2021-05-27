@@ -9,15 +9,20 @@
       </div>
       <input type="text" class="input" v-model="search" />
     </div>
+    <button class="btn" disabled>Create new</button>
     <div class="configuration-list">
       <div
         class="list-item"
         v-for="configuration in configurationsToShow"
         :value="configuration.id"
         :key="configuration.id"
-        @click="selectWorkspace(configuration.id)"
+        @click.self="selectWorkspace(configuration.id)"
       >
-        {{ configuration.title }}
+        <div>{{ configuration.title }}</div>
+        <div class="list-item-button-container">
+          <div class="icon"><i class="fas fa-edit" /></div>
+          <div class="icon"><i class="fas fa-trash-alt" /></div>
+        </div>
       </div>
     </div>
   </div>
@@ -80,7 +85,10 @@ export default {
   border: 1px solid rgb(199, 208, 217);
   width: 200px;
 }
-
+.btn {
+  width: 80px;
+  height: 30px;
+}
 .configuration-list {
   display: flex;
   flex-direction: column;
@@ -91,6 +99,15 @@ export default {
   padding: 12px 8px;
   background: #eee;
   transition: 0.2s;
+  display: flex;
+  justify-content: space-between;
+}
+.list-item-button-container {
+  display: flex;
+}
+.icon {
+  margin-left: 5px;
+  color: grey;
 }
 
 .list-item:nth-child(odd) {
