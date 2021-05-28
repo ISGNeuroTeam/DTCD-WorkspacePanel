@@ -21,7 +21,11 @@
         <input v-if="editTitleID === configuration.id" type="text" v-model="tempTitle" />
         <div v-else @click.self="selectWorkspace(configuration.id)">{{ configuration.title }}</div>
         <div class="list-item-button-container">
-          <div v-show="editTitleID === configuration.id" class="icon" @click="saveTitle">
+          <div
+            v-show="editTitleID === configuration.id"
+            class="icon"
+            @click="saveTitle(configuration)"
+          >
             <i class="fas fa-save" />
           </div>
           <div
@@ -52,7 +56,7 @@ export default {
       configurationList: [],
       search: '',
       tempTitle: '',
-      editTitleID: null,
+      editTitleID: -1,
     };
   },
   mounted() {
@@ -73,7 +77,7 @@ export default {
     },
   },
   methods: {
-    saveTitle() {
+    saveTitle(configuration) {
       if (this.tempTitle != '') {
         this.$root.interactionSystem
           .PUTRequest('/v2/workspace/object', [
@@ -83,11 +87,9 @@ export default {
             },
           ])
           .then(res => {
-            this.configurationList.find(
-              conf => (conf.id = this.editTitleID)
-            ).title = this.tempTitle;
+            configuration.title = this.tempTitle;
             this.tempTitle = '';
-            this.editTitleID = null;
+            this.editTitleID = -1;
           });
       }
     },
