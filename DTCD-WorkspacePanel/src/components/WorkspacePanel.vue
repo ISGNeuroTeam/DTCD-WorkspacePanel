@@ -9,7 +9,7 @@
       </div>
       <input type="text" class="input" v-model="search" />
     </div>
-    <button class="btn" disabled>Create new</button>
+    <button class="btn" @click="createNewWorkspace">Create new</button>
     <div class="configuration-list">
       <div
         class="list-item"
@@ -18,10 +18,26 @@
         :key="configuration.id"
         @click.self="selectWorkspace(configuration.id)"
       >
-        <div>{{ configuration.title }}</div>
+        <input v-if="editTitleID === configuration.id" type="text" v-model="tempTitle" />
+        <div v-else @click.self="selectWorkspace(configuration.id)">{{ configuration.title }}</div>
         <div class="list-item-button-container">
-          <div class="icon"><i class="fas fa-edit" /></div>
-          <div class="icon"><i class="fas fa-trash-alt" /></div>
+          <div v-show="editTitleID === configuration.id" class="icon" @click="saveTitle">
+            <i class="fas fa-save" />
+          </div>
+          <div
+            v-show="editTitleID !== configuration.id"
+            class="icon"
+            @click="changeTemplateTitle(configuration)"
+          >
+            <i class="fas fa-edit" />
+          </div>
+          <div
+            v-show="editTitleID !== configuration.id"
+            class="icon"
+            @click="deleteConfiguration(configuration)"
+          >
+            <i class="fas fa-trash-alt" />
+          </div>
         </div>
       </div>
     </div>
@@ -35,6 +51,8 @@ export default {
     return {
       configurationList: [],
       search: '',
+      tempTitle: '',
+      editTitleID: null,
     };
   },
   mounted() {
@@ -55,10 +73,42 @@ export default {
     },
   },
   methods: {
+    saveTitle() {
+      if (this.tempTitle != '') {
+        this.$root.interactionSystem
+          .PUTRequest('/v2/workspace/object', [
+            {
+              id: this.editTitleID,
+              title: this.tempTitle,
+            },
+          ])
+          .then(res => {
+            this.configurationList.find(
+              conf => (conf.id = this.editTitleID)
+            ).title = this.tempTitle;
+            this.tempTitle = '';
+            this.editTitleID = null;
+          });
+      }
+    },
     selectWorkspace(id) {
       this.$root.eventSystem.createAndPublish(this.$root.guid, 'WorkspaceSelection', {
         id,
       });
+    },
+    createNewWorkspace() {
+      this.$root.eventSystem.createAndPublish(this.$root.guid, 'OpenEmptyWorkspace');
+    },
+    changeTemplateTitle(configuration) {
+      this.tempTitle = configuration.title;
+      this.editTitleID = configuration.id;
+    },
+    deleteConfiguration(configuration) {
+      const { id } = configuration;
+      this.$root.eventSystem.createAndPublish(this.$root.guid, 'WorkspaceDelete', {
+        id,
+      });
+      this.configurationList = this.configurationList.filter(conf => conf.id != id);
     },
   },
 };
@@ -107,7 +157,7 @@ export default {
 }
 .icon {
   margin-left: 5px;
-  color: grey;
+  /* color: grey; */
 }
 
 .list-item:nth-child(odd) {
