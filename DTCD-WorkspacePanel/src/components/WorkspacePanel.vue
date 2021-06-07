@@ -1,5 +1,6 @@
 <template>
   <div class="panel-container">
+    <ModalWindow v-if="isModalVisible" @close="closeModal" @createWorkspace="createWorkspace" />
     <div class="panel-header">
       <h2>Select workspace configuration</h2>
     </div>
@@ -38,7 +39,7 @@
           <div
             v-show="editTitleID !== configuration.id"
             class="icon"
-            @click="deleteConfiguration(configuration)"
+            @click="deleteConfiguration(configuration.id)"
           >
             <i class="fas fa-trash-alt" />
           </div>
@@ -49,20 +50,21 @@
 </template>
 
 <script>
+import ModalWindow from '@/components/ModalWindow';
 export default {
   name: 'WorkspacePanel',
+  components: { ModalWindow },
   data() {
     return {
+      isModalVisible: false,
       configurationList: [],
       search: '',
       tempTitle: '',
       editTitleID: -1,
     };
   },
-  mounted() {
-    this.$root.interactionSystem.GETRequest('/v2/workspace/object').then(response => {
-      this.configurationList = response.data;
-    });
+  async mounted() {
+    await this.getConfigurationList();
   },
   computed: {
     configurationsToShow() {
@@ -77,39 +79,43 @@ export default {
     },
   },
   methods: {
-    saveTitle(configuration) {
+    async getConfigurationList() {
+      this.configurationList = await this.$root.workspaceSystem.getConfigurationList();
+    },
+    closeModal() {
+      this.isModalVisible = false;
+    },
+    async createWorkspace(newTitle) {
+      await this.$root.workspaceSystem.createEmptyConfiguration(newTitle);
+      await this.getConfigurationList();
+    },
+    async saveTitle(configuration) {
       if (this.tempTitle != '') {
-        this.$root.interactionSystem
-          .PUTRequest('/v2/workspace/object', [
-            {
-              id: this.editTitleID,
-              title: this.tempTitle,
-            },
-          ])
-          .then(res => {
-            configuration.title = this.tempTitle;
-            this.tempTitle = '';
-            this.editTitleID = -1;
-          });
+        try {
+          await this.$root.workspaceSystem.changeConfigurationTitle(
+            configuration.id,
+            this.tempTitle
+          );
+          configuration.title = this.tempTitle;
+          this.tempTitle = '';
+          this.editTitleID = -1;
+        } catch (err) {
+          console.log(err);
+        }
       }
     },
     selectWorkspace(id) {
-      this.$root.eventSystem.createAndPublish(this.$root.guid, 'WorkspaceSelection', {
-        id,
-      });
+      this.$root.workspaceSystem.setConfiguration(id);
     },
     createNewWorkspace() {
-      this.$root.eventSystem.createAndPublish(this.$root.guid, 'OpenEmptyWorkspace');
+      this.isModalVisible = true;
     },
     changeTemplateTitle(configuration) {
       this.tempTitle = configuration.title;
       this.editTitleID = configuration.id;
     },
-    deleteConfiguration(configuration) {
-      const { id } = configuration;
-      this.$root.eventSystem.createAndPublish(this.$root.guid, 'WorkspaceDelete', {
-        id,
-      });
+    async deleteConfiguration(id) {
+      await this.$root.workspaceSystem.deleteConfiguration(id);
       this.configurationList = this.configurationList.filter(conf => conf.id != id);
     },
   },
