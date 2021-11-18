@@ -11,6 +11,7 @@
       <input type="text" class="input" v-model="search" />
     </div>
     <button class="btn" @click="createNewWorkspace">Create new</button>
+    <button class="btn" @click="importConfiguration">Import</button>
     <div class="configuration-list">
       <div
         class="list-item"
@@ -35,6 +36,13 @@
             @click="changeTemplateTitle(configuration)"
           >
             <i class="fas fa-edit" />
+          </div>
+          <div
+            v-show="editTitleID !== configuration.id"
+            class="icon"
+            @click="exportConfiguration(configuration.id)"
+          >
+            <i class="fas fa-file-import"></i>
           </div>
           <div
             v-show="editTitleID !== configuration.id"
@@ -117,6 +125,51 @@ export default {
     async deleteConfiguration(id) {
       await this.$root.workspaceSystem.deleteConfiguration(id);
       this.configurationList = this.configurationList.filter(conf => conf.id != id);
+    },
+    async exportConfiguration(id) {
+      const conf = await Application.getSystem('WorkspaceSystem').downloadConfiguration(id);
+      const blobURL = URL.createObjectURL(
+        new Blob([JSON.stringify(conf)], { type: 'application/text' })
+      );
+      if (window.navigator.msSaveOrOpenBlob) {
+        window.navigator.msSaveOrOpenBlob(blobURL, `${conf.title}.json`);
+      } else {
+        const aElement = document.createElement('a');
+        aElement.setAttribute('href', blobURL);
+        aElement.setAttribute('download', `${conf.title}.json`);
+        aElement.style.display = 'none';
+        document.body.appendChild(aElement);
+        aElement.click();
+        document.body.removeChild(aElement);
+      }
+    },
+    async importConfiguration() {
+      const fileInputElement = document.createElement('input');
+      fileInputElement.setAttribute('type', 'file');
+      fileInputElement.style.display = 'none';
+      fileInputElement.addEventListener('change', () => {
+        if (!fileInputElement.files || fileInputElement.files.length <= 0) {
+          throw new Error('There is no file to open');
+        }
+        const reader = new FileReader();
+        const onLoadEndCallback = async evt => {
+          const fileReader = evt.target;
+          if (fileReader.error === null) {
+            const config = JSON.parse(fileReader.result);
+            delete config.id;
+            await Application.getSystem('WorkspaceSystem').importConfiguration(config);
+            await this.getConfigurationList();
+          } else {
+            throw Error(fileReader.error);
+          }
+        };
+        reader.fileName = fileInputElement.files[0].name;
+        reader.onloadend = onLoadEndCallback;
+        reader.readAsText(fileInputElement.files[0]);
+        document.body.removeChild(fileInputElement);
+      });
+      document.body.appendChild(fileInputElement);
+      fileInputElement.click();
     },
   },
 };
