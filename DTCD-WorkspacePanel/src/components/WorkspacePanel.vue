@@ -10,7 +10,7 @@
       </div>
       <input type="text" class="input" v-model="search" />
     </div>
-    <button class="btn" @click="createNewWorkspace">Create new</button>
+    <button class="btn" @click="createNewWorkspace">Create</button>
     <button class="btn" @click="importConfiguration">Import</button>
     <div class="configuration-list">
       <div
@@ -20,7 +20,12 @@
         :key="configuration.id"
         @click.self="selectWorkspace(configuration.id)"
       >
-        <input v-if="editTitleID === configuration.id" type="text" v-model="tempTitle" />
+        <input
+          v-if="editTitleID === configuration.id"
+          @keydown.enter="saveTitle(configuration)"
+          type="text"
+          v-model="tempTitle"
+        />
         <div v-else @click.self="selectWorkspace(configuration.id)">{{ configuration.title }}</div>
         <div class="list-item-button-container">
           <div
@@ -69,6 +74,7 @@ export default {
       search: '',
       tempTitle: '',
       editTitleID: -1,
+      editMode: false,
     };
   },
   async mounted() {
@@ -109,16 +115,19 @@ export default {
           this.editTitleID = -1;
         } catch (err) {
           console.log(err);
+        } finally {
+          this.editMode = false;
         }
       }
     },
     selectWorkspace(id) {
-      this.$root.workspaceSystem.setConfiguration(id);
+      if (!this.editMode) this.$root.workspaceSystem.setConfiguration(id);
     },
     createNewWorkspace() {
       this.isModalVisible = true;
     },
     changeTemplateTitle(configuration) {
+      this.editMode = true;
       this.tempTitle = configuration.title;
       this.editTitleID = configuration.id;
     },
@@ -197,7 +206,7 @@ export default {
   width: 200px;
 }
 .btn {
-  width: 80px;
+  padding: 0 20px;
   height: 30px;
 }
 .configuration-list {
