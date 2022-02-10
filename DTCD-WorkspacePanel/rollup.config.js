@@ -11,6 +11,7 @@ import path from 'path';
 import pluginMeta from './src/Plugin.Meta';
 
 const watch = Boolean(process.env.ROLLUP_WATCH);
+
 import { version } from './package.json';
 
 const pluginName = pluginMeta.name;

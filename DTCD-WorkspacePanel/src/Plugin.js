@@ -14,7 +14,7 @@ export class Plugin extends PanelPlugin {
   }
   constructor(guid, selector) {
     super();
-    const eventSystem = new EventSystemAdapter('0.2.0', guid);
+    const eventSystem = new EventSystemAdapter('0.3.0', guid);
     const interactionSystem = new InteractionSystemAdapter('0.3.1');
     const workspaceSystem = new WorkspaceSystemAdapter('0.3.0');
 
