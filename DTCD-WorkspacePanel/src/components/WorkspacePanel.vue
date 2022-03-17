@@ -67,8 +67,9 @@ import ModalWindow from '@/components/ModalWindow';
 export default {
   name: 'WorkspacePanel',
   components: { ModalWindow },
-  data() {
+  data({ $root }) {
     return {
+      plugin: $root.plugin,
       isModalVisible: false,
       configurationList: [],
       search: '',
@@ -121,7 +122,9 @@ export default {
       }
     },
     selectWorkspace(id) {
-      if (!this.editMode) this.$root.workspaceSystem.setConfiguration(id);
+      if (!this.editMode) {
+        this.$root.router.navigate(`/workspaces/${id}`);
+      }
     },
     createNewWorkspace() {
       this.isModalVisible = true;
@@ -136,7 +139,9 @@ export default {
       this.configurationList = this.configurationList.filter(conf => conf.id != id);
     },
     async exportConfiguration(id) {
-      const conf = await Application.getSystem('WorkspaceSystem').downloadConfiguration(id);
+      const conf = await Application.getSystem('WorkspaceSystem', '0.4.0').downloadConfiguration(
+        id
+      );
       const blobURL = URL.createObjectURL(
         new Blob([JSON.stringify(conf)], { type: 'application/text' })
       );
@@ -166,7 +171,7 @@ export default {
           if (fileReader.error === null) {
             const config = JSON.parse(fileReader.result);
             delete config.id;
-            await Application.getSystem('WorkspaceSystem').importConfiguration(config);
+            await Application.getSystem('WorkspaceSystem', '0.4.0').importConfiguration(config);
             await this.getConfigurationList();
           } else {
             throw Error(fileReader.error);

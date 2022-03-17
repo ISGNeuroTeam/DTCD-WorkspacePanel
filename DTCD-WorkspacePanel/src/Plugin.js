@@ -6,6 +6,7 @@ import {
   InteractionSystemAdapter,
   EventSystemAdapter,
   WorkspaceSystemAdapter,
+  RouteSystemAdapter,
 } from './../../DTCD-SDK/index';
 
 export class Plugin extends PanelPlugin {
@@ -17,10 +18,11 @@ export class Plugin extends PanelPlugin {
     const eventSystem = new EventSystemAdapter('0.4.0', guid);
     const interactionSystem = new InteractionSystemAdapter('0.4.0');
     const workspaceSystem = new WorkspaceSystemAdapter('0.4.0');
+    const router = new RouteSystemAdapter('0.1.0');
 
     const VueJS = this.getDependence('Vue');
 
-    const data = { guid, interactionSystem, eventSystem, workspaceSystem };
+    const data = { guid, interactionSystem, eventSystem, workspaceSystem, plugin: this, router };
 
     new VueJS.default({
       data: () => data,
