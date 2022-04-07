@@ -3,39 +3,118 @@ import PluginComponent from './PluginComponent.vue';
 
 import {
   PanelPlugin,
-  StyleSystemAdapter,
   InteractionSystemAdapter,
   EventSystemAdapter,
   WorkspaceSystemAdapter,
   RouteSystemAdapter,
 } from './../../DTCD-SDK/index';
 
-export class Plugin extends PanelPlugin {
+export class WorkspacePanel extends PanelPlugin {
+
+  #vueComponent;
+
+  #config = {
+    elementSize: 'medium',
+  };
+
   static getRegistrationMeta() {
     return pluginMeta;
   }
 
   constructor(guid, selector) {
     super();
+
     const eventSystem = new EventSystemAdapter('0.4.0', guid);
-    const styleSystem = new StyleSystemAdapter('0.4.0');
     const interactionSystem = new InteractionSystemAdapter('0.4.0');
     const workspaceSystem = new WorkspaceSystemAdapter('0.4.0');
     const router = new RouteSystemAdapter('0.1.0');
 
-    const VueJS = this.getDependence('Vue');
+    const { default: VueJS } = this.getDependence('Vue');
 
     const data = { guid, interactionSystem, eventSystem, workspaceSystem, plugin: this, router };
 
-    const panel = new VueJS.default({
+    const panel = new VueJS({
       data: () => data,
       render: h => h(PluginComponent),
     }).$mount(selector);
 
-    styleSystem.setVariablesToElement(panel.$el, styleSystem.getCurrentTheme());
+    this.#vueComponent = panel.$children[0].$children[0];
   }
 
-  beforeDelete() {
-    console.log('Deleting extensions...');
+  setPluginConfig(config) {
+    for (let prop in config) {
+      if (this.#config.hasOwnProperty(prop)) {
+        this.#config[prop] = config[prop];
+        if (this.#vueComponent.hasOwnProperty(prop)) {
+          this.#vueComponent[prop] = config[prop];
+        }
+      }
+    }
   }
+
+  getPluginConfig() {
+    return this.#config;
+  }
+
+  setFormSettings(config) {
+    this.setPluginConfig(config);
+  }
+
+  getFormSettings() {
+    const { selectedElement } = this.#vueComponent;
+
+    const fields = [
+      {
+        component: 'title',
+        propValue: 'Размер элементов',
+      },
+      {
+        component: 'select',
+        propName: 'elementSize',
+        options: () => [
+          { label: 'Small', value: 'small' },
+          { label: 'Medium', value: 'medium' },
+          { label: 'Large', value: 'large' },
+        ],
+      },
+      {
+        component: 'title',
+        propValue: 'Настройки элемента',
+      },
+    ];
+
+    if (!selectedElement) {
+      fields.push({
+        component: 'subtitle',
+        propValue: 'Выберете один из элементов рабочего стола',
+      });
+    } else {
+      fields.push(...[
+        {
+          component: 'title',
+          propValue: `Выбран: ${selectedElement.title}`,
+        },
+        {
+          component: 'subtitle',
+          propValue: 'Удалить элемент',
+        },
+        {
+          component: 'button',
+          attrs: {
+            theme: 'theme_red',
+          },
+          handler: {
+            event: 'click',
+            callback: () => {
+              const isDelete = confirm(`Удалить дашборд "${selectedElement.title}"?`);
+              isDelete && this.#vueComponent.deleteConfiguration(selectedElement.id);
+            },
+          }
+        },
+      ]);
+    }
+
+    return { fields };
+  }
+
 }

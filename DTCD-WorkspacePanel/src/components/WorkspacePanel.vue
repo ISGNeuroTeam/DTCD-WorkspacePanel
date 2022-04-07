@@ -1,22 +1,25 @@
 <template>
-  <div class="workspace-panel">
+  <div class="workspace-panel" ref="panel" @click.self="selectWorkspaceElement(null)">
     <ModalWindow
       v-if="isModalVisible"
-      @close="closeModal"
+      @close="isModalVisible = false"
       @createWorkspace="createWorkspace"
     />
-    <div class="configuration-list" :style="{ gridTemplateColumns }">
+    <div
+      class="configuration-list"
+      :style="{ gridTemplateColumns }"
+      @click.self="selectWorkspaceElement(null)"
+    >
       <div
         v-for="config in configurationsToShow"
         :key="config.id"
+        :ref="config.id"
         class="list-item"
-        @dblclick="selectWorkspace(config.id)"
+        @click="selectWorkspaceElement(config)"
+        @dblclick="openWorkspace(config.id)"
       >
-        <WorkspaceElementIcon :size="dashElementSize"/>
+        <WorkspaceElementIcon :size="elementSize"/>
         <span class="title" v-text="config.title"/>
-        <!-- Temporary solution -->
-        <div class="_temp-delete-btn" @click="deleteConfiguration(config.id)">X</div>
-        <!-- Temporary solution -->
       </div>
       <div
         class="create-elem-btn"
@@ -51,7 +54,8 @@ export default {
     tempTitle: '',
     editTitleID: -1,
     editMode: false,
-    dashElementSize: 'medium',
+    elementSize: 'medium',
+    selectedElement: null,
   }),
   computed: {
     configurationsToShow() {
@@ -66,11 +70,11 @@ export default {
     },
 
     iconSize() {
-      return elementSizes[this.dashElementSize].size;
+      return elementSizes[this.elementSize].size;
     },
 
     iconRadius() {
-      return elementSizes[this.dashElementSize].radius;
+      return elementSizes[this.elementSize].radius;
     },
 
     gridTemplateColumns() {
@@ -85,8 +89,17 @@ export default {
       this.configurationList = await this.$root.workspaceSystem.getConfigurationList();
     },
 
-    closeModal() {
-      this.isModalVisible = false;
+    selectWorkspaceElement(elemData) {
+      this.selectedElement?.el?.classList.remove('selected');
+
+      if (!elemData) {
+        return this.selectedElement = null;
+      }
+
+      const [el] = this.$refs[elemData.id]
+      el.classList.add('selected');
+
+      this.selectedElement = { ...elemData, el };
     },
 
     async createWorkspace(newTitle) {
@@ -112,7 +125,7 @@ export default {
       }
     },
 
-    selectWorkspace(id) {
+    openWorkspace(id) {
       if (!this.editMode) {
         this.$root.router.navigate(`/workspaces/${id}`);
       }
@@ -192,6 +205,7 @@ export default {
   box-sizing: border-box
 
 .workspace-panel
+  min-height: 100%
   color: var(--text_main)
   font-family: 'Proxima Nova'
   font-size: 11px
@@ -233,14 +247,12 @@ export default {
       position: relative
       transition: background-color .3s
 
-      &:hover
+      &:hover,
+      &.selected
         background-color: var(--button_primary_12)
 
         .title
           color: var(--button_primary)
-
-        ._temp-delete-btn
-          display: block
 
       .title
         align-self: stretch
@@ -249,16 +261,4 @@ export default {
         overflow-wrap: break-word
         padding: 0 4px 2px
         transition: color .3s
-
-      ._temp-delete-btn
-        position: absolute
-        top: 0
-        right: 0
-        color: red
-        font-size: 22px
-        opacity: .5
-        display: none
-
-        &:hover
-          opacity: 1
 </style>
