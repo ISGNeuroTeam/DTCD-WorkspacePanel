@@ -73,7 +73,9 @@ export default {
 }
 
 .modal {
-  background: #ffffff;
+  background-color: var(--border_secondary);
+  border: 1px solid var(--border);
+  border-radius: 20px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   height: 25vh;
   width: 50vh;
@@ -100,7 +102,6 @@ export default {
   bottom: 0;
   right: 0;
   width: 100%;
-  border-top: 1px solid #eeeeee;
   justify-content: flex-end;
 }
 

@@ -205,12 +205,13 @@ export default {
   box-sizing: border-box
 
 .workspace-panel
-  min-height: 100%
+  height: 100%
   color: var(--text_main)
   font-family: 'Proxima Nova'
   font-size: 11px
   font-weight: 400
   line-height: 12px
+  background-color: var(--background_secondary)
 
   .configuration-list
     padding: 60px 20px
