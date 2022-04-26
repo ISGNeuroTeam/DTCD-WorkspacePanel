@@ -205,7 +205,7 @@ export default {
   box-sizing: border-box
 
 .workspace-panel
-  height: 100%
+  min-height: 100%
   color: var(--text_main)
   font-family: 'Proxima Nova'
   font-size: 11px
@@ -219,6 +219,10 @@ export default {
     gap: 50px
     justify-content: space-between
     align-items: start
+
+    @media (max-width: 600px)
+      justify-content: space-around
+      width: 100vw
 
     .create-elem-btn
       display: flex
