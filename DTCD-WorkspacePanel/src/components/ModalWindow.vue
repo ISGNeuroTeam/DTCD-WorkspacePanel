@@ -3,25 +3,28 @@
     <div class="ModalBackdrop">
       <div class="ModalWindow">
         <header class="ModalHeader">
-          <base-heading 
-            theme="theme_subheaderSmall"
-          >
+          <base-heading theme="theme_subheaderSmall">
             <h1>Новый элемент</h1>
           </base-heading>
-          <button 
-            type="button" 
-            class="ButtonClose" 
-            @click="close"
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M16 1.61143L14.3886 0L8 6.38857L1.61143 0L0 1.61143L6.38857 8L0 14.3886L1.61143 16L8 9.61143L14.3886 16L16 14.3886L9.61143 8L16 1.61143Z" fill="#C6C6D4"/>
+          <button type="button" class="ButtonClose" @click="close">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M16 1.61143L14.3886 0L8 6.38857L1.61143 0L0 1.61143L6.38857 8L0 14.3886L1.61143 16L8 9.61143L14.3886 16L16 14.3886L9.61143 8L16 1.61143Z"
+                fill="#C6C6D4"
+              />
             </svg>
           </button>
         </header>
 
         <section class="FormField">
-          <base-input 
-            v-model="tempTitle" 
+          <base-input
+            ref="workspaceTitle"
             label="Название"
             placeholder="Введите название рабочего стола"
           >
@@ -29,20 +32,10 @@
         </section>
 
         <footer class="ModalFooter">
-          <base-button
-            type="button" 
-            theme="theme_secondary"
-            class="ButtonClose"
-            @click="close"
-          >
+          <base-button type="button" theme="theme_secondary" class="ButtonClose" @click="close">
             Отменить
           </base-button>
-          <base-button
-            type="button"
-            @click="save"
-          >
-            Сохранить
-          </base-button>
+          <base-button type="button" @click="save"> Сохранить </base-button>
         </footer>
       </div>
     </div>
@@ -52,35 +45,27 @@
 <script>
 export default {
   name: 'ModalWindow',
-  data() {
-    return {
-      tempTitle: '',
-      color: 'none',
-    };
-  },
   methods: {
     close() {
       this.$emit('close');
       this.clearTempValue();
     },
     save() {
-      if (this.tempTitle === '') {
-        this.color = 'red';
+      if (this.$refs.workspaceTitle.value === '') {
+        console.log(this.$refs.workspaceTitle);
         return;
       }
-      this.color = 'none';
-      this.$emit('createWorkspace', this.tempTitle);
+      this.$emit('createWorkspace', this.$refs.workspaceTitle.value);
       this.close();
     },
     clearTempValue() {
-      this.tempTitle = '';
+      this.$refs.workspaceTitle.value = '';
     },
   },
 };
 </script>
 
 <style lang="scss" scoped>
-
 .ModalBackdrop {
   position: fixed;
   top: 0;
@@ -97,7 +82,7 @@ export default {
   *::after,
   *::before {
     box-sizing: border-box;
-  }  
+  }
 
   .ModalWindow {
     background-color: var(--background_main);
