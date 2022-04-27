@@ -211,6 +211,7 @@ export default {
   font-size: 11px
   font-weight: 400
   line-height: 12px
+  background-color: var(--background_secondary)
 
   .configuration-list
     padding: 60px 20px
@@ -218,6 +219,10 @@ export default {
     gap: 50px
     justify-content: space-between
     align-items: start
+
+    @media (max-width: 600px)
+      justify-content: space-around
+      width: 100vw
 
     .create-elem-btn
       display: flex
