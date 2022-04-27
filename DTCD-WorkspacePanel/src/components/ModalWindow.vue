@@ -1,28 +1,48 @@
 <template>
   <transition name="modal-fade">
-    <div class="modal-backdrop">
-      <div class="modal">
-        <header class="modal-header">
-          <slot name="header"> Создание рабочего стола</slot>
-          <button type="button" class="btn-close" @click="close">x</button>
+    <div class="ModalBackdrop">
+      <div class="ModalWindow">
+        <header class="ModalHeader">
+          <base-heading 
+            theme="theme_subheaderSmall"
+          >
+            <h1>Новый элемент</h1>
+          </base-heading>
+          <button 
+            type="button" 
+            class="ButtonClose" 
+            @click="close"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16 1.61143L14.3886 0L8 6.38857L1.61143 0L0 1.61143L6.38857 8L0 14.3886L1.61143 16L8 9.61143L14.3886 16L16 14.3886L9.61143 8L16 1.61143Z" fill="#C6C6D4"/>
+            </svg>
+          </button>
         </header>
-        <section class="modal-body">
-          <div class="form-field">
-            <div class="label-wrapper">
-              <label :style="{ color: color }">Title</label>
-            </div>
-            <input
-              id="ttl"
-              type="text"
-              class="input"
-              v-model="tempTitle"
-              :style="{ borderColor: color }"
-            />
-          </div>
+
+        <section class="FormField">
+          <base-input 
+            v-model="tempTitle" 
+            label="Название"
+            placeholder="Введите название рабочего стола"
+          >
+          </base-input>
         </section>
-        <footer class="modal-footer">
-          <button type="button" class="footer-btn" @click="save">Save</button>
-          <button type="button" class="footer-btn" @click="close">Close</button>
+
+        <footer class="ModalFooter">
+          <base-button
+            type="button" 
+            theme="theme_secondary"
+            class="ButtonClose"
+            @click="close"
+          >
+            Отменить
+          </base-button>
+          <base-button
+            type="button"
+            @click="save"
+          >
+            Сохранить
+          </base-button>
         </footer>
       </div>
     </div>
@@ -59,8 +79,9 @@ export default {
 };
 </script>
 
-<style scoped>
-.modal-backdrop {
+<style lang="scss" scoped>
+
+.ModalBackdrop {
   position: fixed;
   top: 0;
   bottom: 0;
@@ -70,81 +91,65 @@ export default {
   justify-content: center;
   align-items: center;
   z-index: 5;
-}
 
-.modal {
-  background-color: var(--border_secondary);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-  height: 25vh;
-  width: 50vh;
-  display: flex;
-  flex-direction: column;
-  z-index: 30;
-  position: relative;
-}
+  &,
+  *,
+  *::after,
+  *::before {
+    box-sizing: border-box;
+  }  
 
-.modal-header,
-.modal-footer {
-  padding: 15px;
-  display: flex;
-}
+  .ModalWindow {
+    background-color: var(--background_main);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    height: 30vh;
+    width: 60vh;
+    display: flex;
+    flex-direction: column;
+    z-index: 30;
+    position: relative;
+    padding: 15px 30px;
 
-.modal-header {
-  position: relative;
-  border-bottom: 1px solid #eeeeee;
-  justify-content: space-between;
-}
+    .ModalHeader,
+    .ModalFooter {
+      display: flex;
+    }
 
-.modal-footer {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 100%;
-  justify-content: flex-end;
-}
+    .ModalHeader {
+      position: relative;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 8px;
+    }
 
-.modal-body {
-  position: relative;
-  padding: 20px;
-}
+    .ButtonClose {
+      display: flex;
+      border: none;
+      cursor: pointer;
+      background: transparent;
+      padding: 0;
 
-.btn-close {
-  position: absolute;
-  top: 0;
-  right: 5px;
-  border: none;
-  font-size: 20px;
-  padding: 10px;
-  cursor: pointer;
-  font-weight: bold;
-  color: #757575;
-  background: transparent;
-}
-.btn-close:hover {
-  color: #2196f3;
-}
+      & > svg:hover {
+        path {
+          fill: var(--button_primary_72);
+        }
+      }
+    }
 
-.footer-btn {
-  padding: 5px;
-  width: 80px;
-  margin: 2px 5px;
-}
+    .FormField {
+      margin-bottom: 12px;
+    }
 
-.input {
-  padding: 0.5rem;
-  border: 1px solid rgb(199, 208, 217);
-  width: 100%;
-  max-width: 500px;
-}
-.label-wrapper {
-  padding: 0.2rem;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.25;
-}
-.form-field {
-  margin-bottom: 10px;
+    .ModalFooter {
+      margin-top: auto;
+      justify-content: flex-end;
+
+      .ButtonClose {
+        padding-right: 10px;
+      }
+    }
+  }
 }
 </style>
