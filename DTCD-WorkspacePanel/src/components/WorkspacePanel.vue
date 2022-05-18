@@ -1,61 +1,37 @@
 <template>
-  <div class="panel-container">
-    <ModalWindow v-if="isModalVisible" @close="closeModal" @createWorkspace="createWorkspace" />
-    <div class="panel-header">
-      <h2>Select workspace configuration</h2>
-    </div>
-    <div class="form-field">
-      <div class="label-wrapper">
-        <label>Search</label>
-      </div>
-      <input type="text" class="input" v-model="search" />
-    </div>
-    <button class="btn" @click="createNewWorkspace">Create</button>
-    <button class="btn" @click="importConfiguration">Import</button>
-    <div class="configuration-list">
+  <div class="workspace-panel" ref="panel" @click.self="selectWorkspaceElement(null)">
+    <ModalWindow
+      v-if="isModalVisible"
+      @close="isModalVisible = false"
+      @createWorkspace="createWorkspace"
+    />
+    <div
+      class="configuration-list"
+      :style="{ gridTemplateColumns }"
+      @click.self="selectWorkspaceElement(null)"
+    >
       <div
+        v-for="config in configurationsToShow"
+        :key="config.id"
+        :ref="config.id"
         class="list-item"
-        v-for="configuration in configurationsToShow"
-        :value="configuration.id"
-        :key="configuration.id"
-        @click.self="selectWorkspace(configuration.id)"
+        @click="selectWorkspaceElement(config)"
+        @dblclick="openWorkspace(config.id)"
       >
-        <input
-          v-if="editTitleID === configuration.id"
-          @keydown.enter="saveTitle(configuration)"
-          type="text"
-          v-model="tempTitle"
-        />
-        <div v-else @click.self="selectWorkspace(configuration.id)">{{ configuration.title }}</div>
-        <div class="list-item-button-container">
-          <div
-            v-show="editTitleID === configuration.id"
-            class="icon"
-            @click="saveTitle(configuration)"
-          >
-            <i class="fas fa-save" />
-          </div>
-          <div
-            v-show="editTitleID !== configuration.id"
-            class="icon"
-            @click="changeTemplateTitle(configuration)"
-          >
-            <i class="fas fa-edit" />
-          </div>
-          <div
-            v-show="editTitleID !== configuration.id"
-            class="icon"
-            @click="exportConfiguration(configuration.id)"
-          >
-            <i class="fas fa-file-import"></i>
-          </div>
-          <div
-            v-show="editTitleID !== configuration.id"
-            class="icon"
-            @click="deleteConfiguration(configuration.id)"
-          >
-            <i class="fas fa-trash-alt" />
-          </div>
+        <WorkspaceElementIcon :size="elementSize"/>
+        <span class="title" v-text="config.title"/>
+      </div>
+      <div
+        class="create-elem-btn"
+        :style="{ width: `${iconSize}px`, height: `${iconSize}px`, borderRadius: `${iconRadius}px` }"
+        @click="createNewWorkspace"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path class="icon" d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C21.9939 17.5203 17.5203 21.9939 12 22ZM4 12.172C4.04732 16.5732 7.64111 20.1095 12.0425 20.086C16.444 20.0622 19.9995 16.4875 19.9995 12.086C19.9995 7.68451 16.444 4.10977 12.0425 4.086C7.64111 4.06246 4.04732 7.59876 4 12V12.172ZM13 17H11V13H7V11H11V7H13V11H17V13H13V17Z"/>
+        </svg>
+        <div class="title">
+          <span>Добавить</span>
+          <span>элемент</span>
         </div>
       </div>
     </div>
@@ -64,22 +40,23 @@
 
 <script>
 import ModalWindow from '@/components/ModalWindow';
+import WorkspaceElementIcon from '@/components/WorkspaceElementIcon';
+import elementSizes from './../utils/elementSizes';
+
 export default {
   name: 'WorkspacePanel',
-  components: { ModalWindow },
-  data() {
-    return {
-      isModalVisible: false,
-      configurationList: [],
-      search: '',
-      tempTitle: '',
-      editTitleID: -1,
-      editMode: false,
-    };
-  },
-  async mounted() {
-    await this.getConfigurationList();
-  },
+  components: { ModalWindow, WorkspaceElementIcon },
+  data: ({ $root }) => ({
+    plugin: $root.plugin,
+    isModalVisible: false,
+    configurationList: [],
+    search: '',
+    tempTitle: '',
+    editTitleID: -1,
+    editMode: false,
+    elementSize: 'medium',
+    selectedElement: null,
+  }),
   computed: {
     configurationsToShow() {
       if (this.configurationList) {
@@ -91,18 +68,45 @@ export default {
       }
       return [];
     },
+
+    iconSize() {
+      return elementSizes[this.elementSize].size;
+    },
+
+    iconRadius() {
+      return elementSizes[this.elementSize].radius;
+    },
+
+    gridTemplateColumns() {
+      return `repeat(auto-fill, ${this.iconSize + 2}px)`
+    }
+  },
+  async mounted() {
+    await this.getConfigurationList();
   },
   methods: {
     async getConfigurationList() {
       this.configurationList = await this.$root.workspaceSystem.getConfigurationList();
     },
-    closeModal() {
-      this.isModalVisible = false;
+
+    selectWorkspaceElement(elemData) {
+      this.selectedElement?.el?.classList.remove('selected');
+
+      if (!elemData) {
+        return this.selectedElement = null;
+      }
+
+      const [el] = this.$refs[elemData.id]
+      el.classList.add('selected');
+
+      this.selectedElement = { ...elemData, el };
     },
+
     async createWorkspace(newTitle) {
       await this.$root.workspaceSystem.createEmptyConfiguration(newTitle);
       await this.getConfigurationList();
     },
+
     async saveTitle(configuration) {
       if (this.tempTitle != '') {
         try {
@@ -120,23 +124,32 @@ export default {
         }
       }
     },
-    selectWorkspace(id) {
-      if (!this.editMode) this.$root.workspaceSystem.setConfiguration(id);
+
+    openWorkspace(id) {
+      if (!this.editMode) {
+        this.$root.router.navigate(`/workspaces/${id}`);
+      }
     },
+
     createNewWorkspace() {
       this.isModalVisible = true;
     },
+
     changeTemplateTitle(configuration) {
       this.editMode = true;
       this.tempTitle = configuration.title;
       this.editTitleID = configuration.id;
     },
+
     async deleteConfiguration(id) {
       await this.$root.workspaceSystem.deleteConfiguration(id);
       this.configurationList = this.configurationList.filter(conf => conf.id != id);
     },
+
     async exportConfiguration(id) {
-      const conf = await Application.getSystem('WorkspaceSystem').downloadConfiguration(id);
+      const conf = await Application.getSystem('WorkspaceSystem', '0.4.0').downloadConfiguration(
+        id
+      );
       const blobURL = URL.createObjectURL(
         new Blob([JSON.stringify(conf)], { type: 'application/text' })
       );
@@ -152,6 +165,7 @@ export default {
         document.body.removeChild(aElement);
       }
     },
+
     async importConfiguration() {
       const fileInputElement = document.createElement('input');
       fileInputElement.setAttribute('type', 'file');
@@ -166,7 +180,7 @@ export default {
           if (fileReader.error === null) {
             const config = JSON.parse(fileReader.result);
             delete config.id;
-            await Application.getSystem('WorkspaceSystem').importConfiguration(config);
+            await Application.getSystem('WorkspaceSystem', '0.4.0').importConfiguration(config);
             await this.getConfigurationList();
           } else {
             throw Error(fileReader.error);
@@ -184,57 +198,72 @@ export default {
 };
 </script>
 
-<style scoped>
-.panel-container {
-  padding: 15px;
-}
+<style lang="sass" scoped>
+*
+  margin: 0
+  padding: 0
+  box-sizing: border-box
 
-.label-wrapper {
-  padding: 0.4rem 0;
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 1.25;
-}
+.workspace-panel
+  min-height: 100%
+  color: var(--text_main)
+  font-family: 'Proxima Nova'
+  font-size: 11px
+  font-weight: 400
+  line-height: 12px
+  background-color: var(--background_secondary)
 
-.form-field {
-  margin-bottom: 10px;
-}
+  .configuration-list
+    padding: 60px 20px
+    display: grid
+    gap: 50px
+    justify-content: space-between
+    align-items: start
 
-.input {
-  padding: 0.5rem;
-  border: 1px solid rgb(199, 208, 217);
-  width: 200px;
-}
-.btn {
-  padding: 0 20px;
-  height: 30px;
-}
-.configuration-list {
-  display: flex;
-  flex-direction: column;
-}
+    @media (max-width: 600px)
+      justify-content: space-around
+      width: 100vw
 
-.list-item {
-  cursor: pointer;
-  padding: 12px 8px;
-  background: #eee;
-  transition: 0.2s;
-  display: flex;
-  justify-content: space-between;
-}
-.list-item-button-container {
-  display: flex;
-}
-.icon {
-  margin-left: 5px;
-  /* color: grey; */
-}
+    .create-elem-btn
+      display: flex
+      flex-direction: column
+      align-items: center
+      justify-content: center
+      cursor: pointer
+      gap: 7px
+      background-color: var(--border_secondary)
+      border: 1px solid var(--border)
 
-.list-item:nth-child(odd) {
-  background: #f9f9f9;
-}
+      .icon
+        fill: var(--text_secondary)
 
-.list-item:hover {
-  background: #ddd;
-}
+      .title
+        display: flex
+        flex-direction: column
+        text-align: center
+
+    .list-item
+      display: flex
+      align-items: center
+      flex-direction: column
+      cursor: pointer
+      user-select: none
+      border-radius: 8px
+      position: relative
+      transition: background-color .3s
+
+      &:hover,
+      &.selected
+        background-color: var(--button_primary_12)
+
+        .title
+          color: var(--button_primary)
+
+      .title
+        align-self: stretch
+        margin-top: 6px
+        text-align: center
+        overflow-wrap: break-word
+        padding: 0 4px 2px
+        transition: color .3s
 </style>

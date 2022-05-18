@@ -3,6 +3,7 @@ import vue from 'rollup-plugin-vue';
 import commonjs from '@rollup/plugin-commonjs';
 import resolve from '@rollup/plugin-node-resolve';
 import json from '@rollup/plugin-json';
+import html from 'rollup-plugin-html';
 
 import styles from 'rollup-plugin-styles';
 import replace from '@rollup/plugin-replace';
@@ -29,6 +30,9 @@ const plugins = [
     extensions: ['.mjs', '.js', '.json', '.node', '.vue'],
   }),
   commonjs(),
+  html({
+    include: ['**/*.html', '**/*.svg'],
+  }),
   vue({
     preprocessStyles: true,
   }),
