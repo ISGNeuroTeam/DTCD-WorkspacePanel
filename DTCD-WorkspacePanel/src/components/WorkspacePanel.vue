@@ -26,9 +26,7 @@
         :style="{ width: `${iconSize}px`, height: `${iconSize}px`, borderRadius: `${iconRadius}px` }"
         @click="createNewWorkspace"
       >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path class="icon" d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C21.9939 17.5203 17.5203 21.9939 12 22ZM4 12.172C4.04732 16.5732 7.64111 20.1095 12.0425 20.086C16.444 20.0622 19.9995 16.4875 19.9995 12.086C19.9995 7.68451 16.444 4.10977 12.0425 4.086C7.64111 4.06246 4.04732 7.59876 4 12V12.172ZM13 17H11V13H7V11H11V7H13V11H17V13H13V17Z"/>
-        </svg>
+        <span class="FontIcon name_plusCircleOutline size_lg"></span>
         <div class="title">
           <span>Добавить</span>
           <span>элемент</span>
@@ -212,6 +210,9 @@ export default {
   font-weight: 400
   line-height: 12px
   background-color: var(--background_secondary)
+
+  .FontIcon
+    color: var(--text_secondary)
 
   .configuration-list
     padding: 60px 20px
