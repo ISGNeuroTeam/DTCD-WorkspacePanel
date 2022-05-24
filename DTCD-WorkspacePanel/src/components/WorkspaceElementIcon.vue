@@ -10,9 +10,7 @@
       </defs>
     </svg>
     <div v-if="isFolder" class="icon-content" v-html="folderIcon"/>
-    <svg v-else class="icon-content" width="52" height="52" viewBox="0 0 52 52" fill="none">
-      <path d="M8.66683 47.6667H4.3335V4.33337H8.66683V47.6667ZM32.5002 45.5H10.8335V39H32.5002V45.5ZM39.0002 34.6667H10.8335V28.1667H39.0002V34.6667ZM45.5002 23.8334H10.8335V17.3334H45.5002V23.8334ZM28.1668 13H10.8335V6.50004H28.1668V13Z" fill="white"/>
-    </svg>
+    <span v-else class="icon-content FontIcon name_barChartHorizontal size_3xl"></span> 
   </div>
 </template>
 
@@ -53,6 +51,9 @@ export default {
 <style lang="sass" scoped>
 .icon-wrapper
   position: relative
+
+  .FontIcon
+    color: var(--background_main)
 
   .icon-back
     display: block
