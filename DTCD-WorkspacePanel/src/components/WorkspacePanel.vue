@@ -5,6 +5,57 @@
       @close="isModalVisible = false"
       @createWorkspace="createWorkspace"
     />
+    <div class="header">
+      <base-input class="search-field" size="big" placeholder="Поиск">
+        <span slot="icon-left" class="FontIcon name_searchSmall size_lg"></span>
+      </base-input>
+
+      <div class="action-panel">
+        <base-dropdown>
+          <span slot="icon-arrow"></span>
+          <span slot="toggle-btn" class="toggle-btn">
+            <span class="FontIcon name_filter size_lg"></span>
+            <span class="title">Фильтры</span>
+          </span>
+          <nav class="dropdown-menu">
+            <base-checkbox>
+              <span class="menu-item-title">Все элементы</span>
+            </base-checkbox>
+            <base-checkbox
+              v-for="(filter, index) in filterList"
+              :key="index"
+            >
+              <span class="menu-item-title" v-text="filter.title"/>
+            </base-checkbox>
+          </nav>
+        </base-dropdown>
+
+        <base-dropdown>
+          <span slot="icon-arrow"></span>
+          <span slot="toggle-btn" class="toggle-btn">
+            <span class="FontIcon name_sort size_lg"></span>
+            <span class="title">Сортировка:</span>
+            <span class="subtitle">По алфавиту</span>
+          </span>
+          <nav class="dropdown-menu">
+            <span class="menu-item-title">По алфавиту</span>
+            <span class="menu-item-title">По типу</span>
+            <span class="menu-item-title">По дате создания</span>
+            <span class="menu-item-title">По дате изменения</span>
+          </nav>
+        </base-dropdown>
+      </div>
+
+      <base-button
+        class="create-elem-btn"
+        theme="theme_alfa"
+        size="big"
+        @click="createNewWorkspace"
+      >
+        <span class="FontIcon name_plusCircleOutline size_lg icon"></span>
+        <span class="title">Добавить элемент</span>
+      </base-button>
+    </div>
     <div
       class="configuration-list"
       :style="{ gridTemplateColumns }"
@@ -20,17 +71,6 @@
       >
         <WorkspaceElementIcon :size="elementSize"/>
         <span class="title" v-text="config.title"/>
-      </div>
-      <div
-        class="create-elem-btn"
-        :style="{ width: `${iconSize}px`, height: `${iconSize}px`, borderRadius: `${iconRadius}px` }"
-        @click="createNewWorkspace"
-      >
-        <span class="FontIcon name_plusCircleOutline size_lg"></span>
-        <div class="title">
-          <span>Добавить</span>
-          <span>элемент</span>
-        </div>
       </div>
     </div>
   </div>
@@ -54,6 +94,17 @@ export default {
     editMode: false,
     elementSize: 'medium',
     selectedElement: null,
+    filterList: [
+      { title: 'Папки' },
+      { title: 'Дашборды' },
+      { title: 'Скрытые элементы' },
+    ],
+    sortList: [
+      { title: 'По алфавиту' },
+      { title: 'По типу' },
+      { title: 'По дате создания' },
+      { title: 'По дате изменения' },
+    ],
   }),
   computed: {
     configurationsToShow() {
@@ -69,10 +120,6 @@ export default {
 
     iconSize() {
       return elementSizes[this.elementSize].size;
-    },
-
-    iconRadius() {
-      return elementSizes[this.elementSize].radius;
     },
 
     gridTemplateColumns() {
@@ -203,45 +250,93 @@ export default {
   box-sizing: border-box
 
 .workspace-panel
-  min-height: 100%
+  display: grid
+  grid-template-rows: auto 1fr
+  height: 100%
   color: var(--text_main)
   font-family: 'Proxima Nova'
-  font-size: 11px
-  font-weight: 400
-  line-height: 12px
   background-color: var(--background_secondary)
 
   .FontIcon
     color: var(--text_secondary)
 
+  .header
+    display: flex
+    align-items: center
+    justify-content: space-between
+    gap: 32px
+    padding: 20px
+    box-shadow: 1px 1px 2px 0px rgba(8, 18, 55, 0.12)
+    z-index: 1
+
+    .search-field
+      flex: 1 1
+      max-width: 320px
+
+    .action-panel
+      flex: 1 0
+      display: flex
+      gap: 32px
+
+      .toggle-btn
+        display: flex
+        align-items: center
+        gap: 8px
+        cursor: pointer
+        padding: 6px
+        user-select: none
+
+        .title,
+        .subtitle
+          font-family: 'Proxima Nova'
+          font-size: 17px
+          color: var(--text_secondary)
+
+        .title
+          font-weight: 700
+
+          @media (max-width: 576px)
+            display: none
+
+      .dropdown-menu
+        display: flex
+        flex-direction: column
+        gap: 10px
+        background-color: var(--background_main)
+        border: 1px solid var(--border)
+        border-radius: 8px
+        box-shadow: 0px 4px 12px 0px rgba(8, 18, 55, 0.12), 1px 1px 2px 0px rgba(8, 18, 55, 0.12)
+        padding: 16px
+
+        .menu-item-title
+          display: block
+          width: 100%
+          font-size: 14px
+          font-weight: 400
+          user-select: none
+
+    .create-elem-btn
+      cursor: pointer
+      padding: 5px 0
+
+      .icon
+        color: var(--button_primary)
+        margin-right: 12px
+
+      .title
+        font-size: 17px
+
   .configuration-list
-    padding: 60px 20px
+    padding: 20px
     display: grid
     gap: 50px
     justify-content: space-between
     align-items: start
+    overflow: auto
 
     @media (max-width: 600px)
       justify-content: space-around
       width: 100vw
-
-    .create-elem-btn
-      display: flex
-      flex-direction: column
-      align-items: center
-      justify-content: center
-      cursor: pointer
-      gap: 7px
-      background-color: var(--border_secondary)
-      border: 1px solid var(--border)
-
-      .icon
-        fill: var(--text_secondary)
-
-      .title
-        display: flex
-        flex-direction: column
-        text-align: center
 
     .list-item
       display: flex
@@ -250,6 +345,9 @@ export default {
       cursor: pointer
       user-select: none
       border-radius: 8px
+      font-size: 11px
+      font-weight: 400
+      line-height: 12px
       position: relative
       transition: background-color .3s
 
