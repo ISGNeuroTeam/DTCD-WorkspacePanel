@@ -100,9 +100,9 @@ export class WorkspacePanel extends PanelPlugin {
         },
         {
           component: 'button',
+          propValue: 'Удалить',
           attrs: {
             theme: 'theme_red',
-            text: 'Удалить',
           },
           handler: {
             event: 'click',
