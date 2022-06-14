@@ -66,7 +66,7 @@ export class WorkspacePanel extends PanelPlugin {
     const fields = [
       {
         component: 'title',
-        propValue: 'Размер элементов',
+        innerText: 'Размер элементов',
       },
       {
         component: 'select',
@@ -79,28 +79,28 @@ export class WorkspacePanel extends PanelPlugin {
       },
       {
         component: 'title',
-        propValue: 'Настройки элемента',
+        innerText: 'Настройки элемента',
       },
     ];
 
     if (!selectedElement) {
       fields.push({
         component: 'subtitle',
-        propValue: 'Выберете один из элементов рабочего стола',
+        innerText: 'Выберете один из элементов рабочего стола',
       });
     } else {
       fields.push(...[
         {
           component: 'title',
-          propValue: `Выбран: ${selectedElement.title}`,
+          innerText: `Выбран: ${selectedElement.title}`,
         },
         {
           component: 'subtitle',
-          propValue: 'Удалить элемент',
+          innerText: 'Удалить элемент',
         },
         {
           component: 'button',
-          propValue: 'Удалить',
+          innerText: 'Удалить',
           attrs: {
             theme: 'theme_red',
           },
