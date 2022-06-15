@@ -2,15 +2,14 @@ import pluginMeta from './Plugin.Meta';
 import PluginComponent from './PluginComponent.vue';
 
 import {
-  PanelPlugin,
+  AppPanelPlugin,
   InteractionSystemAdapter,
   EventSystemAdapter,
   WorkspaceSystemAdapter,
   RouteSystemAdapter,
 } from './../../DTCD-SDK/index';
 
-export class WorkspacePanel extends PanelPlugin {
-
+export class WorkspacePanel extends AppPanelPlugin {
   #vueComponent;
 
   #config = {
@@ -89,30 +88,32 @@ export class WorkspacePanel extends PanelPlugin {
         innerText: 'Выберете один из элементов рабочего стола',
       });
     } else {
-      fields.push(...[
-        {
-          component: 'title',
-          innerText: `Выбран: ${selectedElement.title}`,
-        },
-        {
-          component: 'subtitle',
-          innerText: 'Удалить элемент',
-        },
-        {
-          component: 'button',
-          innerText: 'Удалить',
-          attrs: {
-            theme: 'theme_red',
+      fields.push(
+        ...[
+          {
+            component: 'title',
+            innerText: `Выбран: ${selectedElement.title}`,
           },
-          handler: {
-            event: 'click',
-            callback: () => {
-              const isDelete = confirm(`Удалить дашборд "${selectedElement.title}"?`);
-              isDelete && this.#vueComponent.deleteConfiguration(selectedElement.id);
+          {
+            component: 'subtitle',
+            innerText: 'Удалить элемент',
+          },
+          {
+            component: 'button',
+            innerText: 'Удалить',
+            attrs: {
+              theme: 'theme_red',
             },
-          }
-        },
-      ]);
+            handler: {
+              event: 'click',
+              callback: () => {
+                const isDelete = confirm(`Удалить дашборд "${selectedElement.title}"?`);
+                isDelete && this.#vueComponent.deleteConfiguration(selectedElement.id);
+              },
+            },
+          },
+        ]
+      );
     }
     return { fields };
   }
