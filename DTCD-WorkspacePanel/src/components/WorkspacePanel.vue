@@ -6,11 +6,18 @@
       @createWorkspace="createWorkspace"
     />
     <div class="header">
-      <base-input class="search-field" size="big" placeholder="Поиск">
+      <base-input
+        :value="search"
+        class="search-field"
+        size="big"
+        type="search"
+        placeholder="Поиск"
+        @input="search = $event.target.value"
+      >
         <span slot="icon-left" class="FontIcon name_searchSmall size_lg"></span>
       </base-input>
 
-      <div class="action-panel">
+      <!-- <div class="action-panel">
         <base-dropdown>
           <span slot="icon-arrow"></span>
           <span slot="toggle-btn" class="toggle-btn">
@@ -44,7 +51,7 @@
             <span class="menu-item-title">По дате изменения</span>
           </nav>
         </base-dropdown>
-      </div>
+      </div> -->
 
       <base-button
         class="create-elem-btn"
@@ -56,21 +63,24 @@
         <span class="title">Добавить элемент</span>
       </base-button>
     </div>
-    <div
-      class="configuration-list"
-      :style="{ gridTemplateColumns }"
-      @click.self="selectWorkspaceElement(null)"
-    >
+    <div class="configuration-list-wrapper">
+
       <div
-        v-for="config in configurationsToShow"
-        :key="config.id"
-        :ref="config.id"
-        class="list-item"
-        @click="selectWorkspaceElement(config)"
-        @dblclick="openWorkspace(config.id)"
+        class="configuration-list"
+        :style="{ gridTemplateColumns }"
+        @click.self="selectWorkspaceElement(null)"
       >
-        <WorkspaceElementIcon :size="elementSize"/>
-        <span class="title" v-text="config.title"/>
+        <div
+          v-for="config in configurationsToShow"
+          :key="config.id"
+          :ref="config.id"
+          class="list-item"
+          @click="selectWorkspaceElement(config)"
+          @dblclick="openWorkspace(config.id)"
+        >
+          <WorkspaceElementIcon :size="elementSize"/>
+          <span class="title" v-text="config.title"/>
+        </div>
       </div>
     </div>
   </div>
@@ -108,6 +118,9 @@ export default {
   }),
   computed: {
     configurationsToShow() {
+      return !this.search ? this.configurationList : this.configurationList.filter(
+        conf => conf.title.toLowerCase().includes(this.search.toLowerCase())
+      );
       if (this.configurationList) {
         if (this.search)
           return this.configurationList.filter(conf =>
@@ -325,6 +338,9 @@ export default {
 
       .title
         font-size: 17px
+
+  .configuration-list-wrapper
+    overflow: auto
 
   .configuration-list
     padding: 20px
