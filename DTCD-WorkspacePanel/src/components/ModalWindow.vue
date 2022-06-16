@@ -7,18 +7,7 @@
             <h1>Новый элемент</h1>
           </base-heading>
           <button type="button" class="ButtonClose" @click="close">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M16 1.61143L14.3886 0L8 6.38857L1.61143 0L0 1.61143L6.38857 8L0 14.3886L1.61143 16L8 9.61143L14.3886 16L16 14.3886L9.61143 8L16 1.61143Z"
-                fill="#C6C6D4"
-              />
-            </svg>
+            <span class="FontIcon name_closeBig size_lg"></span> 
           </button>
         </header>
 
@@ -84,6 +73,11 @@ export default {
     box-sizing: border-box;
   }
 
+  .FontIcon {
+    color: var(--border);
+  }
+    
+
   .ModalWindow {
     background-color: var(--background_main);
     border: 1px solid var(--border);
@@ -115,12 +109,6 @@ export default {
       cursor: pointer;
       background: transparent;
       padding: 0;
-
-      & > svg:hover {
-        path {
-          fill: var(--button_primary_72);
-        }
-      }
     }
 
     .FormField {

@@ -5,33 +5,81 @@
       @close="isModalVisible = false"
       @createWorkspace="createWorkspace"
     />
-    <div
-      class="configuration-list"
-      :style="{ gridTemplateColumns }"
-      @click.self="selectWorkspaceElement(null)"
-    >
-      <div
-        v-for="config in configurationsToShow"
-        :key="config.id"
-        :ref="config.id"
-        class="list-item"
-        @click="selectWorkspaceElement(config)"
-        @dblclick="openWorkspace(config.id)"
+    <div class="header">
+      <base-input
+        :value="search"
+        class="search-field"
+        size="big"
+        type="search"
+        placeholder="Поиск"
+        @input="search = $event.target.value"
       >
-        <WorkspaceElementIcon :size="elementSize"/>
-        <span class="title" v-text="config.title"/>
-      </div>
-      <div
+        <span slot="icon-left" class="FontIcon name_searchSmall size_lg"></span>
+      </base-input>
+
+      <!-- <div class="action-panel">
+        <base-dropdown>
+          <span slot="icon-arrow"></span>
+          <span slot="toggle-btn" class="toggle-btn">
+            <span class="FontIcon name_filter size_lg"></span>
+            <span class="title">Фильтры</span>
+          </span>
+          <nav class="dropdown-menu">
+            <base-checkbox>
+              <span class="menu-item-title">Все элементы</span>
+            </base-checkbox>
+            <base-checkbox
+              v-for="(filter, index) in filterList"
+              :key="index"
+            >
+              <span class="menu-item-title" v-text="filter.title"/>
+            </base-checkbox>
+          </nav>
+        </base-dropdown>
+
+        <base-dropdown>
+          <span slot="icon-arrow"></span>
+          <span slot="toggle-btn" class="toggle-btn">
+            <span class="FontIcon name_sort size_lg"></span>
+            <span class="title">Сортировка:</span>
+            <span class="subtitle">По алфавиту</span>
+          </span>
+          <nav class="dropdown-menu">
+            <span class="menu-item-title">По алфавиту</span>
+            <span class="menu-item-title">По типу</span>
+            <span class="menu-item-title">По дате создания</span>
+            <span class="menu-item-title">По дате изменения</span>
+          </nav>
+        </base-dropdown>
+      </div> -->
+
+      <base-button
         class="create-elem-btn"
-        :style="{ width: `${iconSize}px`, height: `${iconSize}px`, borderRadius: `${iconRadius}px` }"
+        theme="theme_alfa"
+        size="big"
         @click="createNewWorkspace"
       >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path class="icon" d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C21.9939 17.5203 17.5203 21.9939 12 22ZM4 12.172C4.04732 16.5732 7.64111 20.1095 12.0425 20.086C16.444 20.0622 19.9995 16.4875 19.9995 12.086C19.9995 7.68451 16.444 4.10977 12.0425 4.086C7.64111 4.06246 4.04732 7.59876 4 12V12.172ZM13 17H11V13H7V11H11V7H13V11H17V13H13V17Z"/>
-        </svg>
-        <div class="title">
-          <span>Добавить</span>
-          <span>элемент</span>
+        <span class="FontIcon name_plusCircleOutline size_lg icon"></span>
+        <span class="title">Добавить элемент</span>
+      </base-button>
+    </div>
+    <div class="configuration-list-wrapper">
+
+      <div
+        class="configuration-list"
+        :style="{ gridTemplateColumns }"
+        @click.self="selectWorkspaceElement(null)"
+      >
+        <div
+          v-for="config in configurationsToShow"
+          :key="config.id"
+          :ref="config.id"
+          class="list-item"
+          @click="selectWorkspaceElement(config)"
+          @dblclick="openWorkspace(config.id)"
+        >
+          <WorkspaceElementIcon :size="elementSize"/>
+          <span class="title" v-text="config.title"/>
         </div>
       </div>
     </div>
@@ -56,9 +104,23 @@ export default {
     editMode: false,
     elementSize: 'medium',
     selectedElement: null,
+    filterList: [
+      { title: 'Папки' },
+      { title: 'Дашборды' },
+      { title: 'Скрытые элементы' },
+    ],
+    sortList: [
+      { title: 'По алфавиту' },
+      { title: 'По типу' },
+      { title: 'По дате создания' },
+      { title: 'По дате изменения' },
+    ],
   }),
   computed: {
     configurationsToShow() {
+      return !this.search ? this.configurationList : this.configurationList.filter(
+        conf => conf.title.toLowerCase().includes(this.search.toLowerCase())
+      );
       if (this.configurationList) {
         if (this.search)
           return this.configurationList.filter(conf =>
@@ -71,10 +133,6 @@ export default {
 
     iconSize() {
       return elementSizes[this.elementSize].size;
-    },
-
-    iconRadius() {
-      return elementSizes[this.elementSize].radius;
     },
 
     gridTemplateColumns() {
@@ -205,42 +263,96 @@ export default {
   box-sizing: border-box
 
 .workspace-panel
-  min-height: 100%
+  display: grid
+  grid-template-rows: auto 1fr
+  height: 100%
   color: var(--text_main)
   font-family: 'Proxima Nova'
-  font-size: 11px
-  font-weight: 400
-  line-height: 12px
   background-color: var(--background_secondary)
 
+  .FontIcon
+    color: var(--text_secondary)
+
+  .header
+    display: flex
+    align-items: center
+    justify-content: space-between
+    gap: 32px
+    padding: 20px
+    box-shadow: 1px 1px 2px 0px rgba(8, 18, 55, 0.12)
+    z-index: 1
+
+    .search-field
+      flex: 1 1
+      max-width: 320px
+
+    .action-panel
+      flex: 1 0
+      display: flex
+      gap: 32px
+
+      .toggle-btn
+        display: flex
+        align-items: center
+        gap: 8px
+        cursor: pointer
+        padding: 6px
+        user-select: none
+
+        .title,
+        .subtitle
+          font-family: 'Proxima Nova'
+          font-size: 17px
+          color: var(--text_secondary)
+
+        .title
+          font-weight: 700
+
+          @media (max-width: 576px)
+            display: none
+
+      .dropdown-menu
+        display: flex
+        flex-direction: column
+        gap: 10px
+        background-color: var(--background_main)
+        border: 1px solid var(--border)
+        border-radius: 8px
+        box-shadow: 0px 4px 12px 0px rgba(8, 18, 55, 0.12), 1px 1px 2px 0px rgba(8, 18, 55, 0.12)
+        padding: 16px
+
+        .menu-item-title
+          display: block
+          width: 100%
+          font-size: 14px
+          font-weight: 400
+          user-select: none
+
+    .create-elem-btn
+      cursor: pointer
+      padding: 5px 0
+
+      .icon
+        color: var(--button_primary)
+        margin-right: 12px
+
+      .title
+        font-size: 17px
+
+  .configuration-list-wrapper
+    overflow: auto
+
   .configuration-list
-    padding: 60px 20px
+    padding: 20px
     display: grid
     gap: 50px
     justify-content: space-between
     align-items: start
+    overflow: auto
 
     @media (max-width: 600px)
       justify-content: space-around
       width: 100vw
-
-    .create-elem-btn
-      display: flex
-      flex-direction: column
-      align-items: center
-      justify-content: center
-      cursor: pointer
-      gap: 7px
-      background-color: var(--border_secondary)
-      border: 1px solid var(--border)
-
-      .icon
-        fill: var(--text_secondary)
-
-      .title
-        display: flex
-        flex-direction: column
-        text-align: center
 
     .list-item
       display: flex
@@ -249,6 +361,9 @@ export default {
       cursor: pointer
       user-select: none
       border-radius: 8px
+      font-size: 11px
+      font-weight: 400
+      line-height: 12px
       position: relative
       transition: background-color .3s
 
