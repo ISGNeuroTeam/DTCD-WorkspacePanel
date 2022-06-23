@@ -6,12 +6,12 @@
           <base-heading theme="theme_subheaderSmall">
             <h1>Новый элемент</h1>
           </base-heading>
-          <button 
-            type="button" 
-            class="ButtonClose" 
+          <button
+            type="button"
+            class="ButtonClose"
             @click="close"
           >
-            <span class="FontIcon name_closeBig size_lg"></span> 
+            <span class="FontIcon name_closeBig size_lg"></span>
           </button>
         </header>
 
@@ -22,16 +22,17 @@
               <span class="ItemLabel">Тип элемента</span>
               <base-tabs>
                 <div slot="tab" tab-name="Дашборд">
-                  <base-input 
-                    class="FieldName" 
-                    label="Название (23 знака)" 
+                  <base-input
+                    ref="workspaceTitle"
+                    class="FieldName"
+                    label="Название (23 знака)"
                     placeholder="Введите название"
                   >
                   </base-input>
-                  <base-textarea 
-                    theme="resize_off" 
-                    class="FieldDescription" 
-                    label="Описание (200 знака)" 
+                  <base-textarea
+                    theme="resize_off"
+                    class="FieldDescription"
+                    label="Описание (200 знака)"
                     placeholder="Введите описание"
                   >
                   </base-textarea>
@@ -40,18 +41,18 @@
                     <div slot="tab" tab-name="Общий"></div>
                     <div slot="tab" tab-name="Личный"></div>
                   </base-tabs>
-                  <base-select 
-                    class="SelectBackground" 
+                  <base-select
+                    class="SelectBackground"
                     label="Фон элемента"
                   >
                     <div slot="item" value="Сплошной">Сплошной</div>
                     <div slot="item" value="Градиент">Градиент</div>
                   </base-select>
-                  
+
                   <div class="SectionChoice">
                     <span class="ItemLabel">Выберете цвет</span>
-                    <base-button 
-                      theme="theme_alfa" 
+                    <base-button
+                      theme="theme_alfa"
                       size="small"
                     >Свой цвет
                       <span slot="icon-left" class="FontIcon name_colorPicker"></span>
@@ -73,8 +74,8 @@
 
                   <!-- <div class="SectionChoice">
                     <span class="ItemLabel">Выберете цвет #1</span>
-                    <base-button 
-                      theme="theme_alfa" 
+                    <base-button
+                      theme="theme_alfa"
                       size="small"
                     >Свой цвет
                       <span slot="icon-left" class="FontIcon name_colorPicker"></span>
@@ -96,8 +97,8 @@
 
                   <div class="SectionChoice">
                     <span class="ItemLabel">Выберете цвет #2</span>
-                    <base-button 
-                      theme="theme_alfa" 
+                    <base-button
+                      theme="theme_alfa"
                       size="small"
                     >Свой цвет
                       <span slot="icon-left" class="FontIcon name_colorPicker"></span>
@@ -119,8 +120,8 @@
 
                   <div class="SectionChoice">
                     <span class="ItemLabel">Выберете иконку</span>
-                    <base-button 
-                      theme="theme_alfa" 
+                    <base-button
+                      theme="theme_alfa"
                       size="small"
                     >Загрузить свою
                       <span slot="icon-left" class="FontIcon name_download"></span>
@@ -129,82 +130,82 @@
                   <div class="SelectIcon">
                     <button class="IconWrapper">
                       <span class="Icon FontIcon name_heartOutline size_lg"></span>
-                    </button> 
+                    </button>
                     <button class="IconWrapper">
                       <span class="Icon FontIcon name_tagOutline size_lg"></span>
-                    </button>  
+                    </button>
                     <button class="IconWrapper">
                       <span class="Icon FontIcon name_calendar size_lg"></span>
-                    </button>  
+                    </button>
                     <button class="IconWrapper">
                       <span class="Icon FontIcon name_infoCircleOutline size_lg"></span>
-                    </button>  
+                    </button>
                     <button class="IconWrapper">
                       <span class="Icon FontIcon name_searchSmall size_xl"></span>
-                    </button>  
+                    </button>
                     <button class="IconWrapper">
                       <span class="Icon FontIcon name_folder size_lg"></span>
-                    </button>  
+                    </button>
                     <button class="IconWrapper">
                       <span class="Icon FontIcon name_copy size_lg"></span>
-                    </button>  
+                    </button>
                     <button class="IconWrapper">
                       <span class="Icon FontIcon name_notificationOutline size_lg"></span>
-                    </button>  
+                    </button>
                     <button class="IconWrapper">
                       <span class="Icon FontIcon name_table size_lg"></span>
-                    </button>  
+                    </button>
                     <button class="IconWrapper">
                       <span class="Icon FontIcon name_cloudOutline size_lg"></span>
-                    </button>  
+                    </button>
                     <button class="IconWrapper">
                       <span class="Icon FontIcon name_idCard size_lg"></span>
-                    </button>  
+                    </button>
                     <button class="IconWrapper">
                       <span class="Icon FontIcon name_pieChartOutline size_lg"></span>
-                    </button>  
+                    </button>
                     <button class="IconWrapper">
                       <span class="Icon FontIcon name_barChartAlt size_lg"></span>
-                    </button>  
+                    </button>
                     <button class="IconWrapper">
                       <span class="Icon FontIcon name_barChartSquare size_lg"></span>
-                    </button>  
+                    </button>
                     <button class="IconWrapper">
                       <span class="Icon FontIcon name_fileFind size_lg"></span>
-                    </button>  
+                    </button>
                     <button class="IconWrapper">
                       <span class="Icon FontIcon name_show size_lg"></span>
-                    </button>  
+                    </button>
                     <button class="IconWrapper">
                       <span class="Icon FontIcon name_mention size_lg"></span>
-                    </button>  
+                    </button>
                     <button class="IconWrapper">
                       <span class="Icon FontIcon name_user size_lg"></span>
-                    </button>  
+                    </button>
                     <button class="IconWrapper">
                       <span class="Icon FontIcon name_lineChartDown size_lg"></span>
-                    </button>  
+                    </button>
                     <button class="IconWrapper">
                       <span class="Icon FontIcon name_chatAlt size_lg"></span>
-                    </button> 
+                    </button>
                     <button class="IconWrapper">
                       <span class="Icon FontIcon name_terminal size_lg"></span>
-                    </button> 
+                    </button>
                     <button class="IconWrapper">
                       <span class="Icon FontIcon name_warningOutline size_lg"></span>
-                    </button>  
+                    </button>
                     <button class="IconWrapper">
                       <span class="Icon FontIcon name_addRow size_lg"></span>
-                    </button>  
+                    </button>
                     <button class="IconWrapper">
                       <span class="Icon FontIcon name_gridHorizontalRound rotate_270 size_lg"></span>
-                    </button>  
+                    </button>
                     <button class="IconWrapper">
                       <span class="Icon FontIcon name_barBottom size_lg"></span>
-                    </button>  
+                    </button>
                   </div>
-                  <base-select 
-                    class="FieldPlacement" 
+                  <base-select
+                    class="FieldPlacement"
                     label="Разместить в"
                   >
                     <div slot="item" value="Домашняя">Домашняя</div>
@@ -212,16 +213,16 @@
                 </div>
 
                 <div slot="tab" tab-name="Папка">
-                  <base-input 
-                    class="FieldName" 
-                    label="Название (23 знака)" 
+                  <base-input
+                    class="FieldName"
+                    label="Название (23 знака)"
                     placeholder="Введите название"
                   >
                   </base-input>
-                  <base-textarea 
-                    theme="resize_off" 
-                    class="FieldDescription" 
-                    label="Описание (200 знака)" 
+                  <base-textarea
+                    theme="resize_off"
+                    class="FieldDescription"
+                    label="Описание (200 знака)"
                     placeholder="Введите описание"
                   >
                   </base-textarea>
@@ -230,8 +231,8 @@
                     <div slot="tab" tab-name="Общий"></div>
                     <div slot="tab" tab-name="Личный"></div>
                   </base-tabs>
-                  <base-select 
-                    class="FieldPlacement" 
+                  <base-select
+                    class="FieldPlacement"
                     label="Разместить в"
                   >
                     <div slot="item" value="Домашняя">Домашняя</div>
@@ -239,15 +240,15 @@
                 </div>
               </base-tabs>
               <div class="ModalFooter">
-                <base-button 
-                  type="button" 
-                  theme="theme_secondary" 
+                <base-button
+                  type="button"
+                  theme="theme_secondary"
                   class="ButtonClose"
                   @click="close"
                 >Отменить
                 </base-button>
-                <base-button 
-                  type="button" 
+                <base-button
+                  type="button"
                   @click="save"
                 >Cохранить
                 </base-button>
@@ -255,16 +256,16 @@
             </div>
 
             <div slot="tab" tab-name="Существующий">
-              <base-input 
+              <base-input
                 class="FieldInputSearch"
-                label="Выберете элемент" 
+                label="Выберете элемент"
                 placeholder="Поиск элемента"
               >
                 <span slot="icon-right" class="FontIcon name_searchSmall size_lg"></span>
               </base-input>
               <div class="FolderWrapper">
-                <base-expander 
-                  theme="theme_iconLeft" 
+                <base-expander
+                  theme="theme_iconLeft"
                   class="FieldExpander"
                 >
                   <div slot="summary">Папка
@@ -279,8 +280,8 @@
                     <base-checkbox></base-checkbox>
                   </div>
                 </base-expander>
-                <base-expander 
-                  theme="theme_iconLeft" 
+                <base-expander
+                  theme="theme_iconLeft"
                   class="FieldExpander"
                 >
                   <div slot="summary">Папка
@@ -313,15 +314,15 @@
                 </div>
               </div>
               <div class="ModalFooter">
-                <base-button 
-                  type="button" 
-                  theme="theme_secondary" 
+                <base-button
+                  type="button"
+                  theme="theme_secondary"
                   class="ButtonClose"
                   @click="close"
                 >Отменить
                 </base-button>
-                <base-button 
-                  type="button" 
+                <base-button
+                  type="button"
                   @click="save"
                 >Добавить
                 </base-button>
@@ -339,15 +340,15 @@
                 <span slot="icon" class="FontIcon name_fileBlankOutline size_lg"></span>
               </base-file-loader>
               <div class="ModalFooter">
-                <base-button 
-                  type="button" 
-                  theme="theme_secondary" 
+                <base-button
+                  type="button"
+                  theme="theme_secondary"
                   class="ButtonClose"
                   @click="close"
                 >Отменить
                 </base-button>
-                <base-button 
-                  type="button" 
+                <base-button
+                  type="button"
                   @click="save"
                 >Добавить
                 </base-button>
@@ -370,7 +371,7 @@ export default {
     },
     save() {
       if (this.$refs.workspaceTitle.value === '') {
-        console.log(this.$refs.workspaceTitle);
+        alert('Название не может быть пустым');
         return;
       }
       this.$emit('createWorkspace', this.$refs.workspaceTitle.value);
@@ -402,7 +403,7 @@ export default {
   *::after,
   *::before {
     box-sizing: border-box;
-  }  
+  }
 
   .ModalWindow {
     display: flex;
@@ -580,7 +581,7 @@ export default {
     .FontIcon {
       color: var(--text_main);
       cursor: pointer;
-      
+
       &.name_closeBig:before {
         color: var(--border);
       }
@@ -652,7 +653,7 @@ export default {
         color: var(--text_secondary);
       }
     }
-     
+
     .ModalFooter {
       margin-top: auto;
       justify-content: flex-end;
