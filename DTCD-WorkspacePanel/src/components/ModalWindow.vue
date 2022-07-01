@@ -116,21 +116,6 @@
                       @click="icon = i"
                     ></span>
                   </div>
-
-                  <base-select
-                    :value="placement"
-                    class="FieldPlacement"
-                    label="Разместить в"
-                    @input="placement = $event.target.value"
-                  >
-                    <div slot="item" value="Домашняя">Домашняя</div>
-                    <div
-                      v-if="curPath !== ''"
-                      slot="item"
-                      :value="curPath"
-                      v-text="curPath"
-                    />
-                  </base-select>
                 </div>
 
                 <div slot="tab" tab-name="Папка">
@@ -158,22 +143,23 @@
                     <div slot="tab" tab-name="Личный"></div>
                   </base-tabs> -->
 
-                  <base-select
-                    :value="placement"
-                    class="FieldPlacement"
-                    label="Разместить в"
-                    @input="placement = $event.target.value"
-                  >
-                    <div slot="item" value="Домашняя">Домашняя</div>
-                    <div
-                      v-if="curPath !== ''"
-                      slot="item"
-                      :value="curPath"
-                      v-text="curPath"
-                    />
-                  </base-select>
                 </div>
               </base-tabs>
+              <base-select
+                v-if="!editParams"
+                :value="placement"
+                class="FieldPlacement"
+                label="Разместить в"
+                @input="placement = $event.target.value"
+              >
+                <div slot="item" value="Домашняя">Домашняя</div>
+                <div
+                  v-if="curPath !== ''"
+                  slot="item"
+                  :value="curPath"
+                  v-text="curPath"
+                />
+              </base-select>
             </div>
 
             <!-- COMMENTED FOR FUTURE -->
@@ -218,6 +204,7 @@
                 label="Загрузить дашборд"
                 accept=".json"
                 description="Загрузить файл дашборда"
+                :disabled="editParams"
                 @input="handleFile"
               >
                 <span slot="icon" class="FontIcon name_fileBlankOutline size_lg"></span>
@@ -248,7 +235,7 @@ export default {
   name: 'ModalWindow',
   props: {
     curPath: { type: String, default: '' },
-    params: { type: Object, default: () => ({}) },
+    editParams: { type: Object, default: null },
   },
   data: () => ({
     title: '',
@@ -272,13 +259,60 @@ export default {
   },
   mounted() {
     this.placement = this.curPath === '' ? 'Домашняя' : this.curPath;
+
+    if (!this.editParams) return;
+
+    const { title, description, icon, color } = this.editParams;
+    this.title = title;
+    this.description = description;
+    this.icon = icon;
+
+    if (this.editParams.is_dir) {
+      this.isFolder = true;
+    }
+
+    if (color) {
+      this.mainColor = color[0];
+      if (color.length > 1) {
+        this.secondColor = color[1];
+        this.backgroundMode = 'Градиент';
+      }
+    }
+
   },
   methods: {
     close() {
       this.$emit('close');
     },
 
-    save() {
+    saveEdited() {
+      if (this.editParams.is_dir) {
+        const { title, description, isFolder, placement } = this;
+        const data = { title, description, isFolder, placement };
+        this.$emit('editElement', data);
+        this.close();
+        return;
+      }
+
+      if (this.title === '') {
+        alert('Название не может быть пустым');
+        return;
+      }
+
+      const { title, description, mainColor, secondColor, icon, isFolder, placement } = this;
+
+      const color = this.backgroundMode === 'Сплошной'
+        ? [mainColor]
+        : [mainColor, secondColor];
+
+      const path = placement === 'Домашняя' ? '' : placement;
+
+      const data = { title, description, color, icon, isFolder, path };
+      this.$emit('editElement', data);
+      this.close();
+    },
+
+    saveNew() {
       if (this.selectedActionTab === 'Импортировать') {
         if (this.uploadedFile) {
           this.$emit('importElement', {
@@ -306,6 +340,10 @@ export default {
 
       this.$emit('createElement', data);
       this.close();
+    },
+
+    save() {
+      this.editParams ? this.saveEdited() : this.saveNew();
     },
 
     actionTabSelectHandler(event) {

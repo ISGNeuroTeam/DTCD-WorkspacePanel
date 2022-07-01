@@ -3,9 +3,10 @@
     <ModalWindow
       v-if="isModalVisible"
       :curPath="curPath"
-      :params="modalElemParams"
-      @close="isModalVisible = false"
+      :editParams="editElemParams"
+      @close="closeModal"
       @createElement="createElement"
+      @editElement="editElementData"
       @importElement="importConfiguration"
     />
 
@@ -67,9 +68,6 @@
             <span class="subtitle" v-text="sortTitle"/>
           </span>
           <nav class="dropdown-menu">
-            <span class="menu-item-title" @click="sortBy = ''">
-              По умолчанию
-            </span>
             <span
               v-for="(sort, i) in sortList"
               :key="`sort-${i}`"
@@ -132,7 +130,7 @@ export default {
     interactionSystem: $root.interactionSystem,
     endpoint: '/dtcd_workspaces/v1/workspace/object/',
     isModalVisible: false,
-    modalElemParams: {},
+    editElemParams: null,
     curPath: '',
     isLoading: false,
     sortBy: 'default',
@@ -145,7 +143,6 @@ export default {
       { title: 'Дашборды', checked: true },
     ],
     sortList: [
-      // { title: 'По умолчанию', type: 'default' },
       { title: 'По алфавиту', type: 'title' },
       { title: 'По дате создания', type: 'creation_time' },
       { title: 'По дате изменения', type: 'modification_time'},
@@ -254,13 +251,15 @@ export default {
         for (const item of list) {
           if (!item.is_dir && !item.meta) {
             item.meta = { description: '', icon: 0, color: [0] };
+          } else if (item.is_dir && !item.meta) {
+            item.meta = { description: '' };
           }
         }
 
         this.curPath = path;
         this.elementList = list;
       } catch (error) {
-
+        throw error;
       } finally {
         this.isLoading = false;
       }
@@ -300,6 +299,11 @@ export default {
       this.isModalVisible = true;
     },
 
+    closeModal() {
+      this.isModalVisible = false;
+      this.editElemParams = null;
+    },
+
     async deleteElement(elem) {
       const { path, is_dir } = elem;
       try {
@@ -312,8 +316,38 @@ export default {
           this.getElementList(this.curPath);
         }
       } catch (error) {
-
+        throw error;
       }
+    },
+
+    editElement(elem) {
+      const { title, meta = {}, is_dir } = elem;
+      const description = meta.description;
+      this.editElemParams = { title, description, is_dir, icon: meta.icon, color: meta.color };
+      this.openModal();
+    },
+
+    async editElementData(data) {
+      const { title, description } = data;
+
+      if (data.isFolder) {
+        const { path } = this.selectedElement;
+        await this.interactionSystem.PUTRequest(this.endpoint + `${btoa(path)}`, [
+          { new_title: title }
+        ]);
+        this.getElementList();
+        return;
+      }
+
+      const { icon, color } = data;
+      const { id, path } = this.selectedElement;
+      const meta = { description, icon, color };
+
+      await this.interactionSystem.PUTRequest(this.endpoint + `${btoa(path)}`, [
+        { id, title, meta }
+      ]);
+
+      this.getElementList(path);
     },
 
     async exportConfiguration(elem) {

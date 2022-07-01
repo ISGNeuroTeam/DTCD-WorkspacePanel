@@ -108,6 +108,12 @@ export class WorkspacePanel extends AppPanelPlugin {
               width: 'full',
               size: 'small',
             },
+            handler: {
+              event: 'click',
+              callback: () => {
+                this.#vueComponent.editElement(selectedElement);
+              },
+            },
           },
           {
             component: 'button',
