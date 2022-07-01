@@ -15,247 +15,170 @@
           </button>
         </header>
 
-        <section class="FormField">
+        <section class="ModalBody">
           <span class="ItemLabel">Добавить элемент</span>
-          <base-tabs>
+          <base-tabs @select="actionTabSelectHandler">
             <div slot="tab" tab-name="Новый">
               <span class="ItemLabel">Тип элемента</span>
-              <base-tabs>
+              <base-tabs @select="elemTypeTabSelectHandler">
                 <div slot="tab" tab-name="Дашборд">
                   <base-input
-                    ref="workspaceTitle"
+                    :value="title"
                     class="FieldName"
                     label="Название (23 знака)"
                     placeholder="Введите название"
+                    @input="title = $event.target.value"
                   >
                   </base-input>
                   <base-textarea
+                    :value="description"
                     theme="resize_off"
                     class="FieldDescription"
                     label="Описание (200 знака)"
                     placeholder="Введите описание"
+                    @input="description = $event.target.value"
                   >
                   </base-textarea>
-                  <span class="ItemLabel">Приватность</span>
+                  <!-- COMMENTED FOR FUTURE -->
+                  <!-- <span class="ItemLabel">Приватность</span>
                   <base-tabs>
                     <div slot="tab" tab-name="Общий"></div>
                     <div slot="tab" tab-name="Личный"></div>
-                  </base-tabs>
+                  </base-tabs> -->
                   <base-select
+                    :value="backgroundMode"
                     class="SelectBackground"
                     label="Фон элемента"
+                    @input="backgroundMode = $event.target.value"
                   >
                     <div slot="item" value="Сплошной">Сплошной</div>
                     <div slot="item" value="Градиент">Градиент</div>
                   </base-select>
 
                   <div class="SectionChoice">
-                    <span class="ItemLabel">Выберете цвет</span>
-                    <base-button
-                      theme="theme_alfa"
-                      size="small"
-                    >Свой цвет
+                    <span class="ItemLabel" v-text="mainColorSelectTitle"/>
+                    <!-- COMMENTED FOR FUTURE -->
+                    <!-- <base-button theme="theme_alfa" size="small">
+                      Свой цвет
                       <span slot="icon-left" class="FontIcon name_colorPicker"></span>
-                    </base-button>
+                    </base-button> -->
                   </div>
                   <div class="SelectColor">
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
+                    <div
+                      v-for="(color, i) in colorList"
+                      class="ColorBox"
+                      :key="color"
+                      :class="{ selected: mainColor === i }"
+                      :style="{ backgroundColor: color }"
+                      @click="mainColor = i"
+                    >
+                      <span class="FontIcon name_check size_lg Icon"></span>
+                    </div>
                   </div>
 
-                  <!-- <div class="SectionChoice">
-                    <span class="ItemLabel">Выберете цвет #1</span>
-                    <base-button
-                      theme="theme_alfa"
-                      size="small"
-                    >Свой цвет
-                      <span slot="icon-left" class="FontIcon name_colorPicker"></span>
-                    </base-button>
-                  </div>
-                  <div class="SelectColor">
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                  </div>
+                  <template v-if="backgroundMode === 'Градиент'">
+                    <div class="SectionChoice">
+                      <span class="ItemLabel">Выберете цвет #2</span>
+                      <!-- COMMENTED FOR FUTURE -->
+                      <!-- <base-button theme="theme_alfa" size="small">
+                        Свой цвет
+                        <span slot="icon-left" class="FontIcon name_colorPicker"></span>
+                      </base-button> -->
+                    </div>
+                    <div class="SelectColor">
+                      <div
+                        v-for="(color, i) in colorList"
+                        class="ColorBox"
+                        :key="color"
+                        :class="{ selected: secondColor === i }"
+                        :style="{ backgroundColor: color }"
+                        @click="secondColor = i"
+                      >
+                        <span class="FontIcon name_check size_lg Icon"></span>
+                      </div>
+                    </div>
+                  </template>
 
                   <div class="SectionChoice">
-                    <span class="ItemLabel">Выберете цвет #2</span>
-                    <base-button
-                      theme="theme_alfa"
-                      size="small"
-                    >Свой цвет
-                      <span slot="icon-left" class="FontIcon name_colorPicker"></span>
-                    </base-button>
-                  </div>
-                  <div class="SelectColor">
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                    <button class="ColorBox"><span class="ColorIcon FontIcon name_check size_lg"></span></button>
-                  </div> -->
-
-                  <div class="SectionChoice">
-                    <span class="ItemLabel">Выберете иконку</span>
-                    <base-button
-                      theme="theme_alfa"
-                      size="small"
-                    >Загрузить свою
+                    <span class="ItemLabel">Выберите иконку</span>
+                    <!-- COMMENTED FOR FUTURE -->
+                    <!-- <base-button theme="theme_alfa" size="small">
+                      Загрузить свою
                       <span slot="icon-left" class="FontIcon name_download"></span>
-                    </base-button>
+                    </base-button> -->
                   </div>
                   <div class="SelectIcon">
-                    <button class="IconWrapper">
-                      <span class="Icon FontIcon name_heartOutline size_lg"></span>
-                    </button>
-                    <button class="IconWrapper">
-                      <span class="Icon FontIcon name_tagOutline size_lg"></span>
-                    </button>
-                    <button class="IconWrapper">
-                      <span class="Icon FontIcon name_calendar size_lg"></span>
-                    </button>
-                    <button class="IconWrapper">
-                      <span class="Icon FontIcon name_infoCircleOutline size_lg"></span>
-                    </button>
-                    <button class="IconWrapper">
-                      <span class="Icon FontIcon name_searchSmall size_xl"></span>
-                    </button>
-                    <button class="IconWrapper">
-                      <span class="Icon FontIcon name_folder size_lg"></span>
-                    </button>
-                    <button class="IconWrapper">
-                      <span class="Icon FontIcon name_copy size_lg"></span>
-                    </button>
-                    <button class="IconWrapper">
-                      <span class="Icon FontIcon name_notificationOutline size_lg"></span>
-                    </button>
-                    <button class="IconWrapper">
-                      <span class="Icon FontIcon name_table size_lg"></span>
-                    </button>
-                    <button class="IconWrapper">
-                      <span class="Icon FontIcon name_cloudOutline size_lg"></span>
-                    </button>
-                    <button class="IconWrapper">
-                      <span class="Icon FontIcon name_idCard size_lg"></span>
-                    </button>
-                    <button class="IconWrapper">
-                      <span class="Icon FontIcon name_pieChartOutline size_lg"></span>
-                    </button>
-                    <button class="IconWrapper">
-                      <span class="Icon FontIcon name_barChartAlt size_lg"></span>
-                    </button>
-                    <button class="IconWrapper">
-                      <span class="Icon FontIcon name_barChartSquare size_lg"></span>
-                    </button>
-                    <button class="IconWrapper">
-                      <span class="Icon FontIcon name_fileFind size_lg"></span>
-                    </button>
-                    <button class="IconWrapper">
-                      <span class="Icon FontIcon name_show size_lg"></span>
-                    </button>
-                    <button class="IconWrapper">
-                      <span class="Icon FontIcon name_mention size_lg"></span>
-                    </button>
-                    <button class="IconWrapper">
-                      <span class="Icon FontIcon name_user size_lg"></span>
-                    </button>
-                    <button class="IconWrapper">
-                      <span class="Icon FontIcon name_lineChartDown size_lg"></span>
-                    </button>
-                    <button class="IconWrapper">
-                      <span class="Icon FontIcon name_chatAlt size_lg"></span>
-                    </button>
-                    <button class="IconWrapper">
-                      <span class="Icon FontIcon name_terminal size_lg"></span>
-                    </button>
-                    <button class="IconWrapper">
-                      <span class="Icon FontIcon name_warningOutline size_lg"></span>
-                    </button>
-                    <button class="IconWrapper">
-                      <span class="Icon FontIcon name_addRow size_lg"></span>
-                    </button>
-                    <button class="IconWrapper">
-                      <span class="Icon FontIcon name_gridHorizontalRound rotate_270 size_lg"></span>
-                    </button>
-                    <button class="IconWrapper">
-                      <span class="Icon FontIcon name_barBottom size_lg"></span>
-                    </button>
+                    <span
+                      v-for="(iconClass, i) in iconList"
+                      class="FontIcon size_lg Icon"
+                      :key="iconClass"
+                      :class="[iconClass, icon === i ? 'selected' : '']"
+                      @click="icon = i"
+                    ></span>
                   </div>
+
                   <base-select
+                    :value="placement"
                     class="FieldPlacement"
                     label="Разместить в"
+                    @input="placement = $event.target.value"
                   >
                     <div slot="item" value="Домашняя">Домашняя</div>
+                    <div
+                      v-if="curPath !== ''"
+                      slot="item"
+                      :value="curPath"
+                      v-text="curPath"
+                    />
                   </base-select>
                 </div>
 
                 <div slot="tab" tab-name="Папка">
                   <base-input
+                    :value="title"
                     class="FieldName"
                     label="Название (23 знака)"
                     placeholder="Введите название"
-                  >
-                  </base-input>
+                    @input="title = $event.target.value"
+                  ></base-input>
+
                   <base-textarea
+                    :value="description"
                     theme="resize_off"
                     class="FieldDescription"
                     label="Описание (200 знака)"
                     placeholder="Введите описание"
-                  >
-                  </base-textarea>
-                  <span class="ItemLabel">Приватность</span>
+                    @input="description = $event.target.value"
+                  ></base-textarea>
+
+                  <!-- COMMENTED FOR FUTURE -->
+                  <!-- <span class="ItemLabel">Приватность</span>
                   <base-tabs>
                     <div slot="tab" tab-name="Общий"></div>
                     <div slot="tab" tab-name="Личный"></div>
-                  </base-tabs>
+                  </base-tabs> -->
+
                   <base-select
+                    :value="placement"
                     class="FieldPlacement"
                     label="Разместить в"
+                    @input="placement = $event.target.value"
                   >
                     <div slot="item" value="Домашняя">Домашняя</div>
+                    <div
+                      v-if="curPath !== ''"
+                      slot="item"
+                      :value="curPath"
+                      v-text="curPath"
+                    />
                   </base-select>
                 </div>
               </base-tabs>
-              <div class="ModalFooter">
-                <base-button
-                  type="button"
-                  theme="theme_secondary"
-                  class="ButtonClose"
-                  @click="close"
-                >Отменить
-                </base-button>
-                <base-button
-                  type="button"
-                  @click="save"
-                >Cохранить
-                </base-button>
-              </div>
             </div>
 
-            <div slot="tab" tab-name="Существующий">
+            <!-- COMMENTED FOR FUTURE -->
+
+            <!-- <div slot="tab" tab-name="Существующий">
               <base-input
                 class="FieldInputSearch"
                 label="Выберете элемент"
@@ -265,6 +188,8 @@
               </base-input>
               <div class="FolderWrapper">
                 <base-expander
+                  v-for="f in 3"
+                  :key="`folder-${f}`"
                   theme="theme_iconLeft"
                   class="FieldExpander"
                 >
@@ -280,112 +205,129 @@
                     <base-checkbox></base-checkbox>
                   </div>
                 </base-expander>
-                <base-expander
-                  theme="theme_iconLeft"
-                  class="FieldExpander"
-                >
-                  <div slot="summary">Папка
-                    <base-checkbox class="checkAllExpander"></base-checkbox>
-                  </div>
-                  <div class="ChooseFolder text_small">
-                    <span>Дашборд</span>
-                    <base-checkbox></base-checkbox>
-                  </div>
-                  <div class="ChooseFolder text_small">
-                    <span>Дашборд</span>
-                    <base-checkbox></base-checkbox>
-                  </div>
-                </base-expander>
-                <div class="ChooseFolder">
-                  <span>Дашборд</span>
-                  <base-checkbox></base-checkbox>
-                </div>
-                <div class="ChooseFolder">
-                  <span>Дашборд</span>
-                  <base-checkbox></base-checkbox>
-                </div>
-                <div class="ChooseFolder">
-                  <span>Дашборд</span>
-                  <base-checkbox></base-checkbox>
-                </div>
-                <div class="ChooseFolder">
+                <div v-for="d in 4" :key="`dash-${d}`" class="ChooseFolder">
                   <span>Дашборд</span>
                   <base-checkbox></base-checkbox>
                 </div>
               </div>
-              <div class="ModalFooter">
-                <base-button
-                  type="button"
-                  theme="theme_secondary"
-                  class="ButtonClose"
-                  @click="close"
-                >Отменить
-                </base-button>
-                <base-button
-                  type="button"
-                  @click="save"
-                >Добавить
-                </base-button>
-              </div>
-            </div>
+            </div> -->
 
             <div slot="tab" tab-name="Импортировать">
               <base-file-loader
                 class="LoadImage"
                 label="Загрузить дашборд"
+                accept=".json"
                 description="Загрузить файл дашборда"
-                accept=".jpg, .jpeg, .png"
-                @input="handlePhoto($event)"
+                @input="handleFile"
               >
                 <span slot="icon" class="FontIcon name_fileBlankOutline size_lg"></span>
               </base-file-loader>
-              <div class="ModalFooter">
-                <base-button
-                  type="button"
-                  theme="theme_secondary"
-                  class="ButtonClose"
-                  @click="close"
-                >Отменить
-                </base-button>
-                <base-button
-                  type="button"
-                  @click="save"
-                >Добавить
-                </base-button>
-              </div>
             </div>
+
           </base-tabs>
         </section>
+
+        <footer class="ModalFooter">
+          <base-button theme="theme_secondary" @click="close">
+            Отменить
+          </base-button>
+          <base-button @click="save">
+            Cохранить
+          </base-button>
+        </footer>
       </div>
     </div>
   </transition>
 </template>
 
 <script>
+import icons from './../utils/elementIcons';
+import colors from './../utils/elementColors';
+
 export default {
   name: 'ModalWindow',
+  props: {
+    curPath: { type: String, default: '' },
+    params: { type: Object, default: () => ({}) },
+  },
+  data: () => ({
+    title: '',
+    description: '',
+    backgroundMode: 'Сплошной',
+    iconList: icons,
+    colorList: colors,
+    mainColor: 0,
+    secondColor: 0,
+    icon: 0,
+    placement: 'Домашняя',
+    isFolder: false,
+    selectedActionTab: '',
+    uploadedFile: null,
+  }),
+  computed: {
+    mainColorSelectTitle() {
+      const title = 'Выберите цвет';
+      return this.backgroundMode === 'Сплошной' ? title : `${title} #1`;
+    },
+  },
+  mounted() {
+    this.placement = this.curPath === '' ? 'Домашняя' : this.curPath;
+  },
   methods: {
     close() {
       this.$emit('close');
-      this.clearTempValue();
     },
+
     save() {
-      if (this.$refs.workspaceTitle.value === '') {
+      if (this.selectedActionTab === 'Импортировать') {
+        if (this.uploadedFile) {
+          this.$emit('importElement', {
+            path: this.curPath,
+            file: this.uploadedFile,
+          });
+        }
+        return this.close();
+      }
+
+      if (this.title === '') {
         alert('Название не может быть пустым');
         return;
       }
-      this.$emit('createWorkspace', this.$refs.workspaceTitle.value);
+
+      const { title, description, mainColor, secondColor, icon, isFolder, placement } = this;
+
+      const color = this.backgroundMode === 'Сплошной'
+        ? [mainColor]
+        : [mainColor, secondColor];
+
+      const path = placement === 'Домашняя' ? '' : placement;
+
+      const data = { title, description, color, icon, isFolder, path };
+
+      this.$emit('createElement', data);
       this.close();
     },
-    clearTempValue() {
-      this.$refs.workspaceTitle.value = '';
+
+    actionTabSelectHandler(event) {
+      const { tabName } = event.target.activeTab;
+      this.selectedActionTab = tabName;
+    },
+
+    elemTypeTabSelectHandler(event) {
+      const { tabIndex } = event.target.activeTab;
+      this.isFolder = !!tabIndex;
+    },
+
+    handleFile(event) {
+      if (event.target.value.length <= 0) return;
+      const [file] = event.target.value;
+      this.uploadedFile = file;
     },
   },
 };
 </script>
 
 <style lang="scss" scoped>
-
 .ModalBackdrop {
   position: fixed;
   top: 0;
@@ -397,6 +339,7 @@ export default {
   align-items: center;
   z-index: 5;
   font-family: 'Proxima Nova';
+  background-color: rgba(0, 0, 0, .5);
 
   &,
   *,
@@ -406,16 +349,12 @@ export default {
   }
 
   .ModalWindow {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
     position: relative;
-    height: auto;
-    max-height: 80vh;
+    max-height: 700px;
     width: 520px;
     min-width: 360px;
-    overflow-y: auto;
-    z-index: 30;
-    padding: 15px 30px 0;
     margin: 10px;
     background-color: var(--background_main);
     border: 1px solid var(--border);
@@ -425,12 +364,14 @@ export default {
     .ModalHeader,
     .ModalFooter {
       display: flex;
+      padding: 0 30px;
     }
 
     .ModalHeader {
       position: relative;
       justify-content: space-between;
       align-items: center;
+      padding-top: 15px;
       padding-bottom: 8px;
     }
 
@@ -440,10 +381,17 @@ export default {
       cursor: pointer;
       background: transparent;
       padding: 0;
+      color: var(--border);
+    }
+
+    .ModalBody {
+      overflow: auto;
+      padding: 0 30px;
     }
 
     .FormField {
       margin-bottom: 12px;
+      overflow: auto;
     }
 
     .ItemLabel {
@@ -487,116 +435,38 @@ export default {
 
     .SelectIcon {
       column-gap: 15px;
+
+      .Icon {
+        color: var(--text_main);
+        cursor: pointer;
+
+        &.selected {
+          color: var(--button_primary);
+        }
+      }
     }
 
     .ColorBox {
+      display: flex;
+      align-items: center;
+      justify-content: center;
       width: 30px;
       height: 30px;
       border-radius: 8px;
-      background-color: var(--aero);
+      position: relative;
       cursor: pointer;
-      position: relative;
-      border: none;
-
-      &:active {
-        border: 2px solid var(--general_white);
-      }
-
-      &:nth-child(2) {
-        background-color: var(--navi);
-      }
-
-      &:nth-child(3) {
-        background-color: var(--brown);
-      }
-
-      &:nth-child(4) {
-        background-color: var(--orange);
-      }
-
-      &:nth-child(5) {
-        background-color: var(--yellow);
-      }
-
-      &:nth-child(6) {
-        background-color: var(--mint);
-      }
-
-      &:nth-child(7) {
-        background-color: var(--teal);
-      }
-
-      &:nth-child(8) {
-        background-color: var(--cyan);
-      }
-
-      &:nth-child(9) {
-        background-color: var(--indigo);
-      }
-
-      &:nth-child(10) {
-        background-color: var(--purple);
-      }
-
-      &:nth-child(11) {
-        background-color: var(--pink);
-      }
-
-      .ColorIcon {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        opacity: 0;
-
-        &:active {
-          opacity: 1;
-        }
-      }
-    }
-
-    .IconWrapper {
-      width: 24px;
-      height: 24px;
-      position: relative;
-      border: none;
-      background-color: transparent;
 
       .Icon {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-
-        &:hover {
-          color: var(--button_primary);
-        }
-
-        &:active {
-          color: var(--button_primary);
-        }
-      }
-    }
-
-    .FontIcon {
-      color: var(--text_main);
-      cursor: pointer;
-
-      &.name_closeBig:before {
-        color: var(--border);
-      }
-
-      &.name_colorPicker:before,
-      &.name_download:before {
-        color: var(--button_primary);
-      }
-
-      &.name_fileBlankOutline:before {
-        color: var(--text_secondary);
-      }
-
-      &.name_check:before {
+        display: none;
         color: var(--general_white);
+      }
+
+      &.selected {
+        border: 2px solid var(--general_white);
+
+        .Icon {
+          display: block;
+        }
       }
     }
 
@@ -609,6 +479,7 @@ export default {
       display: flex;
       flex-direction: column;
       margin-bottom: 16px;
+      color: var(--border);
     }
 
     .FieldInputSearch {
@@ -657,11 +528,9 @@ export default {
     .ModalFooter {
       margin-top: auto;
       justify-content: flex-end;
+      gap: 20px;
       padding-top: 10px;
-
-      .ButtonClose {
-        padding-right: 10px;
-      }
+      padding-bottom: 15px;
     }
   }
 }
