@@ -436,7 +436,6 @@ export default {
       font-size: 12px
       background-color: var(--border_24)
       user-select: none
-      box-shadow: 1px 1px 2px 0px rgba(8, 18, 55, 0.12)
 
       .title
         display: flex
