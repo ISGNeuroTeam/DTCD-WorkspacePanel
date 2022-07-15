@@ -105,9 +105,9 @@
           v-for="elem in elementsToShow"
           :key="elem.id"
           :ref="elem.id"
-          class="list-item"
+          :class="['list-item', !elem.permissions.read && 'disabled']"
           @click="selectWorkspaceElement(elem)"
-          @dblclick="openElem(elem)"
+          @dblclick="elem.permissions.read && openElem(elem)"
         >
           <WorkspaceElementIcon v-if="elem.is_dir" :isFolder="elem.is_dir"/>
           <WorkspaceElementIcon v-else :icon="elem.meta.icon" :colors="elem.meta.color"/>
@@ -610,6 +610,10 @@ export default {
 
           .title
             color: var(--button_primary)
+
+        &.disabled
+          opacity: .5
+          cursor: not-allowed
 
         .title
           align-self: stretch

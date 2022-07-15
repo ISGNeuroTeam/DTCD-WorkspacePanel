@@ -72,6 +72,7 @@ export class WorkspacePanel extends AppPanelPlugin {
 
   getFormSettings() {
     const { selectedElement } = this.#vueComponent;
+    const { permissions } = selectedElement;
 
     const fields = [
       {
@@ -88,8 +89,7 @@ export class WorkspacePanel extends AppPanelPlugin {
         ],
       },
       {
-        component: 'title',
-        innerText: 'Настройки элемента',
+        component: 'divider',
       },
     ];
 
@@ -99,6 +99,10 @@ export class WorkspacePanel extends AppPanelPlugin {
         innerText: 'Выберете один из элементов рабочего стола',
       });
     } else {
+      const disabledAttrEditBtn = permissions.update ? {} : { disabled: true };
+      const disabledAttrDelBtn = permissions.delete ? {} : { disabled: true };
+      const disabledAttrExpoBtn = permissions.read ? {} : { disabled: true };
+
       fields.push(
         ...[
           {
@@ -106,43 +110,45 @@ export class WorkspacePanel extends AppPanelPlugin {
             innerText: `Выбран: ${selectedElement.title}`,
           },
           {
-            component: 'subtitle',
-            innerText: 'Удалить элемент',
-          },
-          {
             component: 'button',
-            innerText: 'Изменить',
+            innerText: 'Изменить элемент',
             panelRow: 'row2',
             column: '50',
             attrs: {
               theme: 'theme_blueSec',
               width: 'full',
               size: 'small',
+              ...disabledAttrEditBtn,
             },
             handler: {
               event: 'click',
-              callback: () => {
-                this.#vueComponent.editElement(selectedElement);
-              },
+              callback: permissions.update
+                ? () => {
+                  this.#vueComponent.editElement(selectedElement);
+                }
+                : undefined,
             },
           },
           {
             component: 'button',
-            innerText: 'Удалить',
+            innerText: 'Удалить элемент',
             panelRow: 'row2',
             column: '50',
             attrs: {
               theme: 'theme_red',
               width: 'full',
               size: 'small',
+              ...disabledAttrDelBtn,
             },
             handler: {
               event: 'click',
-              callback: () => {
-                const elemType = selectedElement.is_dir ? 'папку' : 'дашборд';
-                const isDelete = confirm(`Удалить ${elemType} "${selectedElement.title}"?`);
-                isDelete && this.#vueComponent.deleteElement(selectedElement);
-              },
+              callback: permissions.delete
+                ? () => {
+                  const elemType = selectedElement.is_dir ? 'папку' : 'дашборд';
+                  const isDelete = confirm(`Удалить ${elemType} "${selectedElement.title}"?`);
+                  isDelete && this.#vueComponent.deleteElement(selectedElement);
+                }
+                : undefined,
             },
           },
         ]
@@ -151,19 +157,20 @@ export class WorkspacePanel extends AppPanelPlugin {
       if (!selectedElement.is_dir) {
         fields.push({
           component: 'button',
-          innerText: 'Экспортировать',
-          panelRow: 'row3',
-          column: '100',
+          innerText: 'Экспортировать элемент',
           attrs: {
             theme: 'theme_blueSec',
             width: 'full',
             size: 'small',
+            ...disabledAttrExpoBtn,
           },
           handler: {
             event: 'click',
-            callback: () => {
-              this.#vueComponent.exportConfiguration(selectedElement);
-            },
+            callback: permissions.read
+              ? () => {
+                this.#vueComponent.exportConfiguration(selectedElement);
+              }
+              : undefined,
           },
         });
       }
