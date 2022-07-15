@@ -128,6 +128,7 @@ export default {
   components: { ModalWindow, WorkspaceElementIcon },
   data: ({ $root }) => ({
     interactionSystem: $root.interactionSystem,
+    logSystem: $root.logSystem,
     endpoint: '/dtcd_workspaces/v1/workspace/object/',
     isModalVisible: false,
     editElemParams: null,
@@ -241,6 +242,8 @@ export default {
   },
   methods: {
     async getElementList(path = '') {
+      this.logSystem.info(`Getting element list in workspace panel on path '${path}'.`);
+
       const pathBase64 = btoa(path);
       this.isLoading = true;
       this.elementList = [];
@@ -259,6 +262,7 @@ export default {
         this.curPath = path;
         this.elementList = list;
       } catch (error) {
+        this.logSystem.error(`Error getting element list on path '${path}': ${error.message}`);
         throw error;
       } finally {
         this.isLoading = false;
@@ -279,12 +283,16 @@ export default {
     },
 
     async createElement(data = {}) {
+      this.logSystem.info(`Creating element on path '${data.path}'.`);
       await this.$root.workspaceSystem.createEmptyConfiguration(data);
       this.getElementList(data.path);
     },
 
     async openElem(elem) {
       const { id, is_dir, path } = elem;
+
+      this.logSystem.info(`Opening element on path '${path}'.`);
+      
       if (!is_dir) {
         if (path === '') {
           this.$root.router.navigate(`/workspaces/${id}`);
@@ -306,6 +314,9 @@ export default {
 
     async deleteElement(elem) {
       const { path, is_dir } = elem;
+
+      this.logSystem.info(`Deleting element on path '${path}'.`);
+      
       try {
         if (!is_dir) {
           const req = path === '' ? this.endpoint : this.endpoint + btoa(path);
@@ -316,6 +327,7 @@ export default {
           this.getElementList(this.curPath);
         }
       } catch (error) {
+        this.logSystem.error(`Error deleting element on path '${path}': ${error.message}`);
         throw error;
       }
     },
@@ -329,44 +341,59 @@ export default {
 
     async editElementData(data) {
       const { title, description } = data;
+      
+      this.logSystem.info(`Editing element data on path '${path}'.`);
 
-      if (data.isFolder) {
-        const { path } = this.selectedElement;
+      try {
+        if (data.isFolder) {
+          const { path } = this.selectedElement;
+          await this.interactionSystem.PUTRequest(this.endpoint + `${btoa(path)}`, [
+            { new_title: title }
+          ]);
+          this.getElementList();
+          return;
+        }
+  
+        const { icon, color } = data;
+        const { id, path } = this.selectedElement;
+        const meta = { description, icon, color };
+  
         await this.interactionSystem.PUTRequest(this.endpoint + `${btoa(path)}`, [
-          { new_title: title }
+          { id, title, meta }
         ]);
-        this.getElementList();
-        return;
+  
+        this.getElementList(path);
+      } catch (error) {
+        this.logSystem.error(`Error editing element on path '${path}': ${error.message}`);
+        throw error;
       }
-
-      const { icon, color } = data;
-      const { id, path } = this.selectedElement;
-      const meta = { description, icon, color };
-
-      await this.interactionSystem.PUTRequest(this.endpoint + `${btoa(path)}`, [
-        { id, title, meta }
-      ]);
-
-      this.getElementList(path);
     },
 
     async exportConfiguration(elem) {
-      const pathBase64 = btoa(elem.path);
+      const { id, path } = elem;
+      const pathBase64 = btoa(path);
 
-      const { data: config } = await this.interactionSystem.GETRequest(
-        this.endpoint + `${pathBase64}?id=${elem.id}`
-      );
+      this.logSystem.info(`Exporting cofiguration on path '${path}'.`);
 
-      const configJson = JSON.stringify(config, null, 2);
-      const configBlob = new Blob([configJson], { type: 'application/text' })
-
-      const link = document.createElement('a');
-      link.setAttribute('href', URL.createObjectURL(configBlob));
-      link.setAttribute('download', `${config.title}.json`);
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      try {
+        const { data: config } = await this.interactionSystem.GETRequest(
+          this.endpoint + `${pathBase64}?id=${id}`
+        );
+  
+        const configJson = JSON.stringify(config, null, 2);
+        const configBlob = new Blob([configJson], { type: 'application/text' });
+  
+        const link = document.createElement('a');
+        link.setAttribute('href', URL.createObjectURL(configBlob));
+        link.setAttribute('download', `${config.title}.json`);
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (error) {
+        this.logSystem.error(`Error exporting cofiguration on path '${path}': ${error.message}`);
+        throw error;
+      }
     },
 
     readFile(file) {
@@ -383,6 +410,8 @@ export default {
 
       if (!file) return;
 
+      this.logSystem.info(`Importing cofiguration on path '${path}'.`);
+
       const text = await this.readFile(file);
       const importedConfig = JSON.parse(text);
 
@@ -390,10 +419,15 @@ export default {
 
       if ('id' in content) delete content.id;
 
-      await this.interactionSystem.POSTRequest(
-        this.endpoint + btoa(path),
-        [{ title, content }]
-      );
+      try {
+        await this.interactionSystem.POSTRequest(
+          this.endpoint + btoa(path),
+          [{ title, content }]
+        );
+      } catch (error) {
+        this.logSystem.error(`Error importing cofiguration on path '${path}': ${error.message}`);
+        throw error;
+      }
 
       this.getElementList(path);
     },

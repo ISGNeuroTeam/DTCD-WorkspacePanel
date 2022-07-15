@@ -7,10 +7,12 @@ import {
   EventSystemAdapter,
   WorkspaceSystemAdapter,
   RouteSystemAdapter,
+  LogSystemAdapter,
 } from './../../DTCD-SDK/index';
 
 export class WorkspacePanel extends AppPanelPlugin {
   #vueComponent;
+  #logSystem;
 
   #config = {
     elementSize: 'medium',
@@ -27,10 +29,19 @@ export class WorkspacePanel extends AppPanelPlugin {
     const interactionSystem = new InteractionSystemAdapter('0.4.0');
     const workspaceSystem = new WorkspaceSystemAdapter('0.4.0');
     const router = new RouteSystemAdapter('0.1.0');
+    this.#logSystem = new LogSystemAdapter('0.5.0', guid, pluginMeta.name);
 
     const { default: VueJS } = this.getDependence('Vue');
 
-    const data = { guid, interactionSystem, eventSystem, workspaceSystem, plugin: this, router };
+    const data = {
+      guid,
+      interactionSystem,
+      eventSystem,
+      workspaceSystem,
+      plugin: this,
+      router,
+      logSystem: this.#logSystem,
+    };
 
     const panel = new VueJS({
       data: () => data,
