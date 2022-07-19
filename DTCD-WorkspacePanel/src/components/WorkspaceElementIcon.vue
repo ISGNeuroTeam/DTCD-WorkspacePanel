@@ -54,7 +54,7 @@ export default {
     },
 
     mainColor() {
-      return elementColors[this.colors[0]];
+      return elementColors[this.colors = [0]];
     },
 
     secondColor() {
