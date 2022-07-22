@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ability to create folders
 - filtering and sorting desktop elements
 - logging of interactions with the server (deleting, creation, exporting, etc.)
-- permissions deleting, editing and reading elements
+- permissions creating, deleting, editing and reading elements
 
 ### Changed
 

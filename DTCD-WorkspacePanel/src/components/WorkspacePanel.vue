@@ -85,6 +85,7 @@
         theme="theme_alfa"
         size="big"
         @click="openModal"
+        :disabled="disabledCreateBtn"
       >
         <span class="FontIcon name_plusCircleOutline size_lg icon"></span>
         <span class="title">Добавить элемент</span>
@@ -148,6 +149,7 @@ export default {
       { title: 'По дате создания', type: 'creation_time' },
       { title: 'По дате изменения', type: 'modification_time'},
     ],
+    disabledCreateBtn: true,
   }),
   computed: {
     elementsToShow() {
@@ -249,9 +251,12 @@ export default {
       this.elementList = [];
       try {
         const response = await this.interactionSystem.GETRequest(this.endpoint + pathBase64);
-        const list = response.data;
+        const {
+          current_directory = {},
+          content: workspaceList = [],
+        } = response.data;
 
-        for (const item of list) {
+        for (const item of workspaceList) {
           if (!item.is_dir && !item.meta) {
             item.meta = { description: '', icon: 0, color: [0] };
           } else if (item.is_dir && !item.meta) {
@@ -259,8 +264,9 @@ export default {
           }
         }
 
+        this.disabledCreateBtn = current_directory.permissions?.create === false;
         this.curPath = path;
-        this.elementList = list;
+        this.elementList = workspaceList;
       } catch (error) {
         this.logSystem.error(`Error getting element list on path '${path}': ${error.message}`);
         throw error;
@@ -304,7 +310,7 @@ export default {
     },
 
     openModal() {
-      this.isModalVisible = true;
+      if (!this.disabledCreateBtn) this.isModalVisible = true;
     },
 
     closeModal() {
