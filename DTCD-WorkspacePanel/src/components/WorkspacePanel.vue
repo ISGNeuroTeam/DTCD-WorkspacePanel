@@ -87,7 +87,7 @@
         @click="openModal"
         :disabled="disabledCreateBtn"
       >
-        <span class="FontIcon name_plusCircleOutline size_lg icon"></span>
+        <span slot="icon-left" class="FontIcon name_plusCircleOutline size_lg icon"></span>
         <span class="title">Добавить элемент</span>
       </base-button>
     </div>
@@ -461,9 +461,6 @@ export default {
   font-family: 'Proxima Nova'
   background-color: var(--background_secondary)
 
-  .FontIcon
-    color: var(--text_secondary)
-
   .breadcrumbs
     display: flex
     padding: 10px 20px
@@ -511,14 +508,14 @@ export default {
         align-items: center
         gap: 8px
         cursor: pointer
-        padding: 6px
+        padding: 6px 0
         user-select: none
+        color: var(--text_secondary)
 
         .title,
         .subtitle
           font-family: 'Proxima Nova'
           font-size: 17px
-          color: var(--text_secondary)
 
         .title
           font-weight: 700
@@ -548,11 +545,7 @@ export default {
             color: var(--button_primary)
 
     .create-elem-btn
-      cursor: pointer
-      padding: 5px 0
-
       .icon
-        color: var(--button_primary)
         margin-right: 12px
 
       .title
