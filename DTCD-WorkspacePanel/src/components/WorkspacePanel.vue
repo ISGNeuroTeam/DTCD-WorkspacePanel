@@ -250,7 +250,7 @@ export default {
 
         for (const item of list) {
           if (!item.is_dir && !item.meta) {
-            item.meta = { description: '', icon: 0, color: [0] };
+            item.meta = { description: '', icon: 0};
           } else if (item.is_dir && !item.meta) {
             item.meta = { description: '' };
           }
@@ -420,21 +420,21 @@ export default {
 
   .breadcrumbs
     display: flex
-    padding: 20px
+    padding: 10px 20px
     padding-bottom: 0
 
     .breadcrumbs-item
       display: flex
       align-items: center
-      height: 25px
+      height: 20px
       cursor: pointer
-      padding: 0 16px
+      padding: 0 17px
       transform: skew(-15deg)
       border: 1px solid var(--border)
-      margin-left: 5px
+      margin-left: 2px
       border-radius: 4.44px
       font-size: 12px
-      background-color: var(--accent_12)
+      background-color: var(--border_24)
       user-select: none
 
       .title
@@ -446,8 +446,7 @@ export default {
     align-items: center
     justify-content: space-between
     gap: 32px
-    padding: 20px
-    padding-top: 10px
+    padding: 10px 20px
     box-shadow: 1px 1px 2px 0px rgba(8, 18, 55, 0.12)
     z-index: 1
 
