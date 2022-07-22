@@ -2,9 +2,33 @@
   <div class="workspace-panel" ref="panel" @click.self="selectWorkspaceElement(null)">
     <ModalWindow
       v-if="isModalVisible"
-      @close="isModalVisible = false"
-      @createWorkspace="createWorkspace"
+      :curPath="curPath"
+      :editParams="editElemParams"
+      @close="closeModal"
+      @createElement="createElement"
+      @editElement="editElementData"
+      @importElement="importConfiguration"
     />
+
+    <div class="breadcrumbs">
+      <div class="breadcrumbs-item" @click="getElementList()">
+        <div class="title">
+          <span class="FontIcon name_homeOutline"></span>
+        </div>
+      </div>
+      <div
+        v-for="(item, i) in breadcrumbsItems"
+        :key="`path-${i}`"
+        class="breadcrumbs-item"
+        @click="item.clickable && getElementList(item.path)"
+      >
+        <div class="title">
+          <span v-if="item.clickable" v-text="item.title"/>
+          <span v-else class="FontIcon name_moreHorizontal"></span>
+        </div>
+      </div>
+    </div>
+
     <div class="header">
       <base-input
         :value="search"
@@ -17,7 +41,7 @@
         <span slot="icon-left" class="FontIcon name_searchSmall size_lg"></span>
       </base-input>
 
-      <!-- <div class="action-panel">
+      <div class="action-panel">
         <base-dropdown>
           <span slot="icon-arrow"></span>
           <span slot="toggle-btn" class="toggle-btn">
@@ -25,12 +49,11 @@
             <span class="title">Фильтры</span>
           </span>
           <nav class="dropdown-menu">
-            <base-checkbox>
-              <span class="menu-item-title">Все элементы</span>
-            </base-checkbox>
             <base-checkbox
-              v-for="(filter, index) in filterList"
-              :key="index"
+              v-for="(filter, i) in filterList"
+              :key="`filter-${i}`"
+              :checked="filter.checked"
+              @change="filter.checked = $event.target.value"
             >
               <span class="menu-item-title" v-text="filter.title"/>
             </base-checkbox>
@@ -42,44 +65,53 @@
           <span slot="toggle-btn" class="toggle-btn">
             <span class="FontIcon name_sort size_lg"></span>
             <span class="title">Сортировка:</span>
-            <span class="subtitle">По алфавиту</span>
+            <span class="subtitle" v-text="sortTitle"/>
           </span>
           <nav class="dropdown-menu">
-            <span class="menu-item-title">По алфавиту</span>
-            <span class="menu-item-title">По типу</span>
-            <span class="menu-item-title">По дате создания</span>
-            <span class="menu-item-title">По дате изменения</span>
+            <span
+              v-for="(sort, i) in sortList"
+              :key="`sort-${i}`"
+              class="menu-item-title"
+              :class="{ selected: sort.type === sortBy }"
+              @click="sortBy = sort.type"
+              v-text="sort.title"
+            />
           </nav>
         </base-dropdown>
-      </div> -->
+      </div>
 
       <base-button
         class="create-elem-btn"
         theme="theme_alfa"
         size="big"
-        @click="createNewWorkspace"
+        @click="openModal"
       >
         <span class="FontIcon name_plusCircleOutline size_lg icon"></span>
         <span class="title">Добавить элемент</span>
       </base-button>
     </div>
-    <div class="configuration-list-wrapper">
 
+    <div class="element-list-wrapper">
+      <div v-if="elementsToShow.length < 1" class="element-list-placeholder">
+        <span :class="['FontIcon icon', placeholderData.icon]"></span>
+        <span class="title" v-text="placeholderData.title"/>
+      </div>
       <div
-        class="configuration-list"
+        class="element-list"
         :style="{ gridTemplateColumns }"
         @click.self="selectWorkspaceElement(null)"
       >
         <div
-          v-for="config in configurationsToShow"
-          :key="config.id"
-          :ref="config.id"
+          v-for="elem in elementsToShow"
+          :key="elem.id"
+          :ref="elem.id"
           class="list-item"
-          @click="selectWorkspaceElement(config)"
-          @dblclick="openWorkspace(config.id)"
+          @click="selectWorkspaceElement(elem)"
+          @dblclick="openElem(elem)"
         >
-          <WorkspaceElementIcon :size="elementSize"/>
-          <span class="title" v-text="config.title"/>
+          <WorkspaceElementIcon v-if="elem.is_dir" :isFolder="elem.is_dir"/>
+          <WorkspaceElementIcon v-else :icon="elem.meta.icon" :colors="elem.meta.color"/>
+          <span class="title" v-text="elem.title"/>
         </div>
       </div>
     </div>
@@ -95,39 +127,53 @@ export default {
   name: 'WorkspacePanel',
   components: { ModalWindow, WorkspaceElementIcon },
   data: ({ $root }) => ({
-    plugin: $root.plugin,
+    interactionSystem: $root.interactionSystem,
+    endpoint: '/dtcd_workspaces/v1/workspace/object/',
     isModalVisible: false,
-    configurationList: [],
+    editElemParams: null,
+    curPath: '',
+    isLoading: false,
+    sortBy: 'default',
+    elementList: [],
     search: '',
-    tempTitle: '',
-    editTitleID: -1,
-    editMode: false,
     elementSize: 'medium',
     selectedElement: null,
     filterList: [
-      { title: 'Папки' },
-      { title: 'Дашборды' },
-      { title: 'Скрытые элементы' },
+      { title: 'Папки', checked: true },
+      { title: 'Дашборды', checked: true },
     ],
     sortList: [
-      { title: 'По алфавиту' },
-      { title: 'По типу' },
-      { title: 'По дате создания' },
-      { title: 'По дате изменения' },
+      { title: 'По алфавиту', type: 'title' },
+      { title: 'По дате создания', type: 'creation_time' },
+      { title: 'По дате изменения', type: 'modification_time'},
     ],
   }),
   computed: {
-    configurationsToShow() {
-      return !this.search ? this.configurationList : this.configurationList.filter(
-        conf => conf.title.toLowerCase().includes(this.search.toLowerCase())
+    elementsToShow() {
+      if (this.elementList.length <= 0) return [];
+
+      const list = !this.search ? this.elementList : this.elementList.filter(
+        el => el.title.toLowerCase().includes(this.search.toLowerCase())
       );
-      if (this.configurationList) {
-        if (this.search)
-          return this.configurationList.filter(conf =>
-            conf.title.toLowerCase().includes(this.search.toLowerCase())
-          );
-        return this.configurationList;
+
+      if (this.sortList.map(s => s.type).includes(this.sortBy)) {
+        list.sort((a, b) => {
+          if (a[this.sortBy] > b[this.sortBy]) return 1;
+          if (a[this.sortBy] < b[this.sortBy]) return -1;
+          return 0;
+        });
       }
+
+      if (this.isAllFilterChecked) return list;
+
+      const [folderFilter, dashFilter] = this.filterList.map(f => f.checked);
+
+      if (folderFilter && !dashFilter) {
+        return list.filter(el => el.is_dir === true);
+      } else if (!folderFilter && dashFilter) {
+        return list.filter(el => el.is_dir === false);
+      }
+
       return [];
     },
 
@@ -136,15 +182,87 @@ export default {
     },
 
     gridTemplateColumns() {
-      return `repeat(auto-fill, ${this.iconSize + 2}px)`
+      return `repeat(auto-fill, ${this.iconSize}px)`;
+    },
+
+    breadcrumbsItems() {
+      const splitted = this.curPath.split('/');
+
+      const items = splitted.map((title, i) => {
+        const path = splitted.slice(0, i + 1).join('/');
+        return { path, title, clickable: true };
+      });
+
+      if (items.length === 1 && items[0].path === '') {
+        return [];
+      }
+
+      if (items.length >= 7) {
+        const length = items.length - 1;
+        items.splice(3, length - 5, { clickable: false });
+        return items;
+      }
+
+      return items;
+    },
+
+    placeholderData() {
+      if (this.isLoading) {
+        return {
+          icon: 'name_loader spinner',
+          title: 'Идет загрузка...',
+        };
+      }
+
+      if (this.search.length > 0) {
+        return {
+          icon: 'name_searchSmallMinus',
+          title: 'По вашему запросу ничего не найдено',
+        };
+      }
+
+      return {
+        icon: 'name_gridRound',
+        title: 'Список элементов пуст',
+      };
+    },
+
+    isAllFilterChecked() {
+      return this.filterList.every(f => f.checked === true);
+    },
+
+    sortTitle() {
+      const sort = this.sortList.find(s => s.type === this.sortBy);
+      return sort ? sort.title : '';
     }
   },
-  async mounted() {
-    await this.getConfigurationList();
+  mounted() {
+    this.getElementList();
   },
   methods: {
-    async getConfigurationList() {
-      this.configurationList = await this.$root.workspaceSystem.getConfigurationList();
+    async getElementList(path = '') {
+      const pathBase64 = btoa(path);
+      this.isLoading = true;
+      this.elementList = [];
+      try {
+        const response = await this.interactionSystem.GETRequest(this.endpoint + pathBase64);
+        const list = response.data;
+
+        for (const item of list) {
+          if (!item.is_dir && !item.meta) {
+            item.meta = { description: '', icon: 0};
+          } else if (item.is_dir && !item.meta) {
+            item.meta = { description: '' };
+          }
+        }
+
+        this.curPath = path;
+        this.elementList = list;
+      } catch (error) {
+        throw error;
+      } finally {
+        this.isLoading = false;
+      }
     },
 
     selectWorkspaceElement(elemData) {
@@ -160,97 +278,124 @@ export default {
       this.selectedElement = { ...elemData, el };
     },
 
-    async createWorkspace(newTitle) {
-      await this.$root.workspaceSystem.createEmptyConfiguration(newTitle);
-      await this.getConfigurationList();
+    async createElement(data = {}) {
+      await this.$root.workspaceSystem.createEmptyConfiguration(data);
+      this.getElementList(data.path);
     },
 
-    async saveTitle(configuration) {
-      if (this.tempTitle != '') {
-        try {
-          await this.$root.workspaceSystem.changeConfigurationTitle(
-            configuration.id,
-            this.tempTitle
-          );
-          configuration.title = this.tempTitle;
-          this.tempTitle = '';
-          this.editTitleID = -1;
-        } catch (err) {
-          console.log(err);
-        } finally {
-          this.editMode = false;
+    async openElem(elem) {
+      const { id, is_dir, path } = elem;
+      if (!is_dir) {
+        if (path === '') {
+          this.$root.router.navigate(`/workspaces/${id}`);
+        } else {
+          this.$root.router.navigate(`/workspaces/${btoa(path)}:id=${id}`);
         }
       }
+      this.getElementList(path);
     },
 
-    openWorkspace(id) {
-      if (!this.editMode) {
-        this.$root.router.navigate(`/workspaces/${id}`);
-      }
-    },
-
-    createNewWorkspace() {
+    openModal() {
       this.isModalVisible = true;
     },
 
-    changeTemplateTitle(configuration) {
-      this.editMode = true;
-      this.tempTitle = configuration.title;
-      this.editTitleID = configuration.id;
+    closeModal() {
+      this.isModalVisible = false;
+      this.editElemParams = null;
     },
 
-    async deleteConfiguration(id) {
-      await this.$root.workspaceSystem.deleteConfiguration(id);
-      this.configurationList = this.configurationList.filter(conf => conf.id != id);
-    },
-
-    async exportConfiguration(id) {
-      const conf = await Application.getSystem('WorkspaceSystem', '0.4.0').downloadConfiguration(
-        id
-      );
-      const blobURL = URL.createObjectURL(
-        new Blob([JSON.stringify(conf)], { type: 'application/text' })
-      );
-      if (window.navigator.msSaveOrOpenBlob) {
-        window.navigator.msSaveOrOpenBlob(blobURL, `${conf.title}.json`);
-      } else {
-        const aElement = document.createElement('a');
-        aElement.setAttribute('href', blobURL);
-        aElement.setAttribute('download', `${conf.title}.json`);
-        aElement.style.display = 'none';
-        document.body.appendChild(aElement);
-        aElement.click();
-        document.body.removeChild(aElement);
+    async deleteElement(elem) {
+      const { path, is_dir } = elem;
+      try {
+        if (!is_dir) {
+          const req = path === '' ? this.endpoint : this.endpoint + btoa(path);
+          await this.interactionSystem.DELETERequest(req, { data: [elem.id] });
+          this.getElementList(path);
+        } else {
+          await this.interactionSystem.DELETERequest(this.endpoint + btoa(path));
+          this.getElementList(this.curPath);
+        }
+      } catch (error) {
+        throw error;
       }
     },
 
-    async importConfiguration() {
-      const fileInputElement = document.createElement('input');
-      fileInputElement.setAttribute('type', 'file');
-      fileInputElement.style.display = 'none';
-      fileInputElement.addEventListener('change', () => {
-        if (!fileInputElement.files || fileInputElement.files.length <= 0) {
-          throw new Error('There is no file to open');
-        }
+    editElement(elem) {
+      const { title, meta = {}, is_dir } = elem;
+      const description = meta.description;
+      this.editElemParams = { title, description, is_dir, icon: meta.icon, color: meta.color };
+      this.openModal();
+    },
+
+    async editElementData(data) {
+      const { title, description } = data;
+
+      if (data.isFolder) {
+        const { path } = this.selectedElement;
+        await this.interactionSystem.PUTRequest(this.endpoint + `${btoa(path)}`, [
+          { new_title: title }
+        ]);
+        this.getElementList();
+        return;
+      }
+
+      const { icon, color } = data;
+      const { id, path } = this.selectedElement;
+      const meta = { description, icon, color };
+
+      await this.interactionSystem.PUTRequest(this.endpoint + `${btoa(path)}`, [
+        { id, title, meta }
+      ]);
+
+      this.getElementList(path);
+    },
+
+    async exportConfiguration(elem) {
+      const pathBase64 = btoa(elem.path);
+
+      const { data: config } = await this.interactionSystem.GETRequest(
+        this.endpoint + `${pathBase64}?id=${elem.id}`
+      );
+
+      const configJson = JSON.stringify(config, null, 2);
+      const configBlob = new Blob([configJson], { type: 'application/text' })
+
+      const link = document.createElement('a');
+      link.setAttribute('href', URL.createObjectURL(configBlob));
+      link.setAttribute('download', `${config.title}.json`);
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    },
+
+    readFile(file) {
+      return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        const onLoadEndCallback = async evt => {
-          const fileReader = evt.target;
-          if (fileReader.error === null) {
-            const config = JSON.parse(fileReader.result);
-            delete config.id;
-            await Application.getSystem('WorkspaceSystem', '0.4.0').importConfiguration(config);
-            await this.getConfigurationList();
-          } else {
-            throw Error(fileReader.error);
-          }
-        };
-        reader.fileName = fileInputElement.files[0].name;
-        reader.onloadend = onLoadEndCallback;
-        reader.readAsText(fileInputElement.files[0]);
-        document.body.removeChild(fileInputElement);
+        reader.readAsText(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
       });
-      document.body.appendChild(fileInputElement);
-      fileInputElement.click();
+    },
+
+    async importConfiguration(params = {}) {
+      const { file, path = '' } = params;
+
+      if (!file) return;
+
+      const text = await this.readFile(file);
+      const importedConfig = JSON.parse(text);
+
+      const { title, content } = importedConfig;
+
+      if ('id' in content) delete content.id;
+
+      await this.interactionSystem.POSTRequest(
+        this.endpoint + btoa(path),
+        [{ title, content }]
+      );
+
+      this.getElementList(path);
     },
   },
 };
@@ -264,7 +409,7 @@ export default {
 
 .workspace-panel
   display: grid
-  grid-template-rows: auto 1fr
+  grid-template-rows: auto auto 1fr
   height: 100%
   color: var(--text_main)
   font-family: 'Proxima Nova'
@@ -273,12 +418,35 @@ export default {
   .FontIcon
     color: var(--text_secondary)
 
+  .breadcrumbs
+    display: flex
+    padding: 10px 20px
+    padding-bottom: 0
+
+    .breadcrumbs-item
+      display: flex
+      align-items: center
+      height: 20px
+      cursor: pointer
+      padding: 0 17px
+      transform: skew(-15deg)
+      border: 1px solid var(--border)
+      margin-left: 2px
+      border-radius: 4.44px
+      font-size: 12px
+      background-color: var(--border_24)
+      user-select: none
+
+      .title
+        display: flex
+        transform: skew(15deg)
+
   .header
     display: flex
     align-items: center
     justify-content: space-between
     gap: 32px
-    padding: 20px
+    padding: 10px 20px
     box-shadow: 1px 1px 2px 0px rgba(8, 18, 55, 0.12)
     z-index: 1
 
@@ -324,9 +492,13 @@ export default {
         .menu-item-title
           display: block
           width: 100%
+          cursor: pointer
           font-size: 14px
           font-weight: 400
           user-select: none
+
+          &.selected
+            color: var(--button_primary)
 
     .create-elem-btn
       cursor: pointer
@@ -339,46 +511,76 @@ export default {
       .title
         font-size: 17px
 
-  .configuration-list-wrapper
+  .element-list-wrapper
     overflow: auto
 
-  .configuration-list
-    padding: 20px
-    display: grid
-    gap: 50px
-    justify-content: space-between
-    align-items: start
-    overflow: auto
-
-    @media (max-width: 600px)
-      justify-content: space-around
-      width: 100vw
-
-    .list-item
+    .element-list-placeholder
       display: flex
       align-items: center
+      justify-content: center
       flex-direction: column
-      cursor: pointer
-      user-select: none
-      border-radius: 8px
-      font-size: 11px
-      font-weight: 400
-      line-height: 12px
-      position: relative
-      transition: background-color .3s
+      height: 100%
+      color: var(--main_text)
+      font-size: 17px
 
-      &:hover,
-      &.selected
-        background-color: var(--button_primary_12)
+      .icon
+        font-size: 150px
+        color: var(--border_secondary)
+        margin-bottom: 8px
+
+        &.spinner
+          animation-name: spin
+          animation-duration: 1s
+          animation-iteration-count: infinite
+          animation-timing-function: linear
+          transform-origin: 50% 50%
+          will-change: transform
+
+          @keyframes spin
+            100%
+              transform: rotate(360deg)
+
+    .element-list
+      padding: 20px
+      display: grid
+      gap: 50px
+      justify-content: space-between
+      align-items: start
+      overflow: auto
+
+      @media (max-width: 600px)
+        justify-content: space-around
+        width: 100vw
+
+      &:empty
+        background-color: red
+        padding: 0
+
+      .list-item
+        display: flex
+        align-items: center
+        flex-direction: column
+        cursor: pointer
+        user-select: none
+        border-radius: 8px
+        font-size: 11px
+        font-weight: 400
+        line-height: 12px
+        position: relative
+        transition: background-color .3s
+
+        &:hover,
+        &.selected
+          background-color: var(--button_primary_12)
+
+          .title
+            color: var(--button_primary)
 
         .title
-          color: var(--button_primary)
-
-      .title
-        align-self: stretch
-        margin-top: 6px
-        text-align: center
-        overflow-wrap: break-word
-        padding: 0 4px 2px
-        transition: color .3s
+          align-self: stretch
+          margin-top: 6px
+          text-align: center
+          overflow-wrap: break-word
+          padding: 0 4px 2px
+          transition: color .3s
 </style>

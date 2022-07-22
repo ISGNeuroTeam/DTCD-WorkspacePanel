@@ -100,20 +100,62 @@ export class WorkspacePanel extends AppPanelPlugin {
           },
           {
             component: 'button',
-            innerText: 'Удалить',
+            innerText: 'Изменить',
+            panelRow: 'row2',
+            column: '50',
             attrs: {
-              theme: 'theme_red',
+              theme: 'theme_blueSec',
+              width: 'full',
+              size: 'small',
             },
             handler: {
               event: 'click',
               callback: () => {
-                const isDelete = confirm(`Удалить дашборд "${selectedElement.title}"?`);
-                isDelete && this.#vueComponent.deleteConfiguration(selectedElement.id);
+                this.#vueComponent.editElement(selectedElement);
+              },
+            },
+          },
+          {
+            component: 'button',
+            innerText: 'Удалить',
+            panelRow: 'row2',
+            column: '50',
+            attrs: {
+              theme: 'theme_red',
+              width: 'full',
+              size: 'small',
+            },
+            handler: {
+              event: 'click',
+              callback: () => {
+                const elemType = selectedElement.is_dir ? 'папку' : 'дашборд';
+                const isDelete = confirm(`Удалить ${elemType} "${selectedElement.title}"?`);
+                isDelete && this.#vueComponent.deleteElement(selectedElement);
               },
             },
           },
         ]
       );
+
+      if (!selectedElement.is_dir) {
+        fields.push({
+          component: 'button',
+          innerText: 'Экспортировать',
+          panelRow: 'row3',
+          column: '100',
+          attrs: {
+            theme: 'theme_blueSec',
+            width: 'full',
+            size: 'small',
+          },
+          handler: {
+            event: 'click',
+            callback: () => {
+              this.#vueComponent.exportConfiguration(selectedElement);
+            },
+          },
+        });
+      }
     }
     return { fields };
   }
