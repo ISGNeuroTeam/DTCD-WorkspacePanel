@@ -258,7 +258,7 @@ export default {
 
         for (const item of workspaceList) {
           if (!item.is_dir && !item.meta) {
-            item.meta = { description: '', icon: 0, color: [0] };
+            item.meta = { description: '', icon: 0};
           } else if (item.is_dir && !item.meta) {
             item.meta = { description: '' };
           }
@@ -479,7 +479,6 @@ export default {
       font-size: 12px
       background-color: var(--border_24)
       user-select: none
-      box-shadow: 1px 1px 2px 0px rgba(8, 18, 55, 0.12)
 
       .title
         display: flex
