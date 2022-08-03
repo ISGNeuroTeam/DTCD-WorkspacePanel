@@ -11,6 +11,7 @@ import {
 
 export class WorkspacePanel extends AppPanelPlugin {
   #vueComponent;
+  #eventSystem;
 
   #config = {
     elementSize: 'medium',
@@ -23,14 +24,16 @@ export class WorkspacePanel extends AppPanelPlugin {
   constructor(guid, selector) {
     super();
 
-    const eventSystem = new EventSystemAdapter('0.4.0', guid);
+    this.#eventSystem = new EventSystemAdapter('0.4.0', guid);
+    this.#eventSystem.registerPluginInstance(this, ['WorkspaceDeleted']);
+
     const interactionSystem = new InteractionSystemAdapter('0.4.0');
     const workspaceSystem = new WorkspaceSystemAdapter('0.4.0');
     const router = new RouteSystemAdapter('0.1.0');
 
     const { default: VueJS } = this.getDependence('Vue');
 
-    const data = { guid, interactionSystem, eventSystem, workspaceSystem, plugin: this, router };
+    const data = { guid, interactionSystem, workspaceSystem, plugin: this, router };
 
     const panel = new VueJS({
       data: () => data,
@@ -127,10 +130,13 @@ export class WorkspacePanel extends AppPanelPlugin {
             },
             handler: {
               event: 'click',
-              callback: () => {
+              callback: async () => {
                 const elemType = selectedElement.is_dir ? 'папку' : 'дашборд';
                 const isDelete = confirm(`Удалить ${elemType} "${selectedElement.title}"?`);
-                isDelete && this.#vueComponent.deleteElement(selectedElement);
+                if (isDelete) {
+                  await this.#vueComponent.deleteElement(selectedElement);
+                  this.#eventSystem.publishEvent('WorkspaceDeleted', {guid: this.guid});
+                }
               },
             },
           },
