@@ -251,10 +251,21 @@ export default {
       this.elementList = [];
       try {
         const response = await this.interactionSystem.GETRequest(this.endpoint + pathBase64);
-        const {
-          current_directory = {},
-          content: workspaceList = [],
-        } = response.data;
+        let workspaceList;
+
+        if (response?.data instanceof Array) {
+          workspaceList = response.data;
+          this.disabledCreateBtn = false;
+        } else if (response.data instanceof Object) {
+          const {
+            current_directory = {},
+            content = [],
+          } = response.data;
+          workspaceList = content;
+          this.disabledCreateBtn = current_directory.permissions?.create === false;
+        } else {
+          throw new Error('Received invalid data from the server');
+        }
 
         for (const item of workspaceList) {
           if (!item.is_dir && !item.meta) {
@@ -262,9 +273,14 @@ export default {
           } else if (item.is_dir && !item.meta) {
             item.meta = { description: '' };
           }
+          // TODO: delete this
+          if (!item.permissions) {
+            item.permissions = {
+              create: true, read: true, update: true, delete: true,
+            };
+          }
         }
 
-        this.disabledCreateBtn = current_directory.permissions?.create === false;
         this.curPath = path;
         this.elementList = workspaceList;
       } catch (error) {
