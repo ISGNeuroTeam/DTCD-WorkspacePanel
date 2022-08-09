@@ -368,22 +368,28 @@ export default {
     },
 
     async editElementData(data) {
-      const { title, description } = data;
+      const {
+        title,
+        description,
+        icon,
+        color,
+      } = data;
+      const {
+        id,
+        path,
+      } = this.selectedElement;
       
       this.logSystem.info(`Editing element data on path '${path}'.`);
 
       try {
         if (data.isFolder) {
-          const { path } = this.selectedElement;
           await this.interactionSystem.PUTRequest(this.endpoint + `${btoa(path)}`, [
             { new_title: title }
           ]);
           this.getElementList();
           return;
         }
-  
-        const { icon, color } = data;
-        const { id, path } = this.selectedElement;
+
         const meta = { description, icon, color };
   
         await this.interactionSystem.PUTRequest(this.endpoint + `${btoa(path)}`, [
