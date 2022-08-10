@@ -250,7 +250,7 @@ export default {
 
         for (const item of list) {
           if (!item.is_dir && !item.meta) {
-            item.meta = { description: '', icon: 0};
+            item.meta = { description: '', icon: 0, color: [0] };
           } else if (item.is_dir && !item.meta) {
             item.meta = { description: '' };
           }

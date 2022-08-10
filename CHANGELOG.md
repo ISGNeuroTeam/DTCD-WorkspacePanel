@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - publish of event of workspace delete
 
+## Fixed
+
+- workspace element colors are not applied or applied incorrectly
+
 ## [0.5.0]
 
 ### Added
