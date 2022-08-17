@@ -85,8 +85,9 @@
         theme="theme_alfa"
         size="big"
         @click="openModal"
+        :disabled="disabledCreateBtn"
       >
-        <span class="FontIcon name_plusCircleOutline size_lg icon"></span>
+        <span slot="icon-left" class="FontIcon name_plusCircleOutline size_lg icon"></span>
         <span class="title">Добавить элемент</span>
       </base-button>
     </div>
@@ -105,9 +106,9 @@
           v-for="elem in elementsToShow"
           :key="elem.id"
           :ref="elem.id"
-          class="list-item"
+          :class="['list-item', !elem.permissions.read && 'disabled']"
           @click="selectWorkspaceElement(elem)"
-          @dblclick="openElem(elem)"
+          @dblclick="elem.permissions.read && openElem(elem)"
         >
           <WorkspaceElementIcon v-if="elem.is_dir" :isFolder="elem.is_dir"/>
           <WorkspaceElementIcon v-else :icon="elem.meta.icon" :colors="elem.meta.color"/>
@@ -128,6 +129,7 @@ export default {
   components: { ModalWindow, WorkspaceElementIcon },
   data: ({ $root }) => ({
     interactionSystem: $root.interactionSystem,
+    logSystem: $root.logSystem,
     endpoint: '/dtcd_workspaces/v1/workspace/object/',
     isModalVisible: false,
     editElemParams: null,
@@ -147,6 +149,7 @@ export default {
       { title: 'По дате создания', type: 'creation_time' },
       { title: 'По дате изменения', type: 'modification_time'},
     ],
+    disabledCreateBtn: true,
   }),
   computed: {
     elementsToShow() {
@@ -241,24 +244,47 @@ export default {
   },
   methods: {
     async getElementList(path = '') {
+      this.logSystem.info(`Getting element list in workspace panel on path '${path}'.`);
+
       const pathBase64 = btoa(path);
       this.isLoading = true;
       this.elementList = [];
       try {
         const response = await this.interactionSystem.GETRequest(this.endpoint + pathBase64);
-        const list = response.data;
+        let workspaceList;
 
-        for (const item of list) {
+        if (response?.data instanceof Array) {
+          workspaceList = response.data;
+          this.disabledCreateBtn = false;
+        } else if (response.data instanceof Object) {
+          const {
+            current_directory = {},
+            content = [],
+          } = response.data;
+          workspaceList = content;
+          this.disabledCreateBtn = current_directory.permissions?.create === false;
+        } else {
+          throw new Error('Received invalid data from the server');
+        }
+
+        for (const item of workspaceList) {
           if (!item.is_dir && !item.meta) {
-            item.meta = { description: '', icon: 0};
+            item.meta = { description: '', icon: 0, color: [0] };
           } else if (item.is_dir && !item.meta) {
             item.meta = { description: '' };
+          }
+          // TODO: delete this
+          if (!item.permissions) {
+            item.permissions = {
+              create: true, read: true, update: true, delete: true,
+            };
           }
         }
 
         this.curPath = path;
-        this.elementList = list;
+        this.elementList = workspaceList;
       } catch (error) {
+        this.logSystem.error(`Error getting element list on path '${path}': ${error.message}`);
         throw error;
       } finally {
         this.isLoading = false;
@@ -279,12 +305,22 @@ export default {
     },
 
     async createElement(data = {}) {
-      await this.$root.workspaceSystem.createEmptyConfiguration(data);
+      this.logSystem.info(`Creating element on path '${data.path}'.`);
+
+      try {
+        await this.$root.workspaceSystem.createEmptyConfiguration(data);
+      } catch (error) {
+        this.logSystem.error(`Error creating element on path '${path}': ${error.message}`);
+      }
+
       this.getElementList(data.path);
     },
 
     async openElem(elem) {
       const { id, is_dir, path } = elem;
+
+      this.logSystem.info(`Opening element on path '${path}'.`);
+      
       if (!is_dir) {
         if (path === '') {
           this.$root.router.navigate(`/workspaces/${id}`);
@@ -296,7 +332,7 @@ export default {
     },
 
     openModal() {
-      this.isModalVisible = true;
+      if (!this.disabledCreateBtn) this.isModalVisible = true;
     },
 
     closeModal() {
@@ -306,6 +342,9 @@ export default {
 
     async deleteElement(elem) {
       const { path, is_dir } = elem;
+
+      this.logSystem.info(`Deleting element on path '${path}'.`);
+      
       try {
         if (!is_dir) {
           const req = path === '' ? this.endpoint : this.endpoint + btoa(path);
@@ -316,6 +355,7 @@ export default {
           this.getElementList(this.curPath);
         }
       } catch (error) {
+        this.logSystem.error(`Error deleting element on path '${path}': ${error.message}`);
         throw error;
       }
     },
@@ -328,45 +368,66 @@ export default {
     },
 
     async editElementData(data) {
-      const { title, description } = data;
+      const {
+        title,
+        description,
+        icon,
+        color,
+      } = data;
+      const {
+        id,
+        path,
+      } = this.selectedElement;
+      
+      this.logSystem.info(`Editing element data on path '${path}'.`);
 
-      if (data.isFolder) {
-        const { path } = this.selectedElement;
+      try {
+        if (data.isFolder) {
+          await this.interactionSystem.PUTRequest(this.endpoint + `${btoa(path)}`, [
+            { new_title: title }
+          ]);
+          this.getElementList();
+          return;
+        }
+
+        const meta = { description, icon, color };
+  
         await this.interactionSystem.PUTRequest(this.endpoint + `${btoa(path)}`, [
-          { new_title: title }
+          { id, title, meta }
         ]);
-        this.getElementList();
-        return;
+  
+        this.getElementList(path);
+      } catch (error) {
+        this.logSystem.error(`Error editing element on path '${path}': ${error.message}`);
+        throw error;
       }
-
-      const { icon, color } = data;
-      const { id, path } = this.selectedElement;
-      const meta = { description, icon, color };
-
-      await this.interactionSystem.PUTRequest(this.endpoint + `${btoa(path)}`, [
-        { id, title, meta }
-      ]);
-
-      this.getElementList(path);
     },
 
     async exportConfiguration(elem) {
-      const pathBase64 = btoa(elem.path);
+      const { id, path } = elem;
+      const pathBase64 = btoa(path);
 
-      const { data: config } = await this.interactionSystem.GETRequest(
-        this.endpoint + `${pathBase64}?id=${elem.id}`
-      );
+      this.logSystem.info(`Exporting cofiguration on path '${path}'.`);
 
-      const configJson = JSON.stringify(config, null, 2);
-      const configBlob = new Blob([configJson], { type: 'application/text' })
-
-      const link = document.createElement('a');
-      link.setAttribute('href', URL.createObjectURL(configBlob));
-      link.setAttribute('download', `${config.title}.json`);
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      try {
+        const { data: config } = await this.interactionSystem.GETRequest(
+          this.endpoint + `${pathBase64}?id=${id}`
+        );
+  
+        const configJson = JSON.stringify(config, null, 2);
+        const configBlob = new Blob([configJson], { type: 'application/text' });
+  
+        const link = document.createElement('a');
+        link.setAttribute('href', URL.createObjectURL(configBlob));
+        link.setAttribute('download', `${config.title}.json`);
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (error) {
+        this.logSystem.error(`Error exporting cofiguration on path '${path}': ${error.message}`);
+        throw error;
+      }
     },
 
     readFile(file) {
@@ -383,6 +444,8 @@ export default {
 
       if (!file) return;
 
+      this.logSystem.info(`Importing cofiguration on path '${path}'.`);
+
       const text = await this.readFile(file);
       const importedConfig = JSON.parse(text);
 
@@ -390,10 +453,15 @@ export default {
 
       if ('id' in content) delete content.id;
 
-      await this.interactionSystem.POSTRequest(
-        this.endpoint + btoa(path),
-        [{ title, content }]
-      );
+      try {
+        await this.interactionSystem.POSTRequest(
+          this.endpoint + btoa(path),
+          [{ title, content }]
+        );
+      } catch (error) {
+        this.logSystem.error(`Error importing cofiguration on path '${path}': ${error.message}`);
+        throw error;
+      }
 
       this.getElementList(path);
     },
@@ -414,9 +482,6 @@ export default {
   color: var(--text_main)
   font-family: 'Proxima Nova'
   background-color: var(--background_secondary)
-
-  .FontIcon
-    color: var(--text_secondary)
 
   .breadcrumbs
     display: flex
@@ -464,14 +529,14 @@ export default {
         align-items: center
         gap: 8px
         cursor: pointer
-        padding: 6px
+        padding: 6px 0
         user-select: none
+        color: var(--text_secondary)
 
         .title,
         .subtitle
           font-family: 'Proxima Nova'
           font-size: 17px
-          color: var(--text_secondary)
 
         .title
           font-weight: 700
@@ -501,11 +566,7 @@ export default {
             color: var(--button_primary)
 
     .create-elem-btn
-      cursor: pointer
-      padding: 5px 0
-
       .icon
-        color: var(--button_primary)
         margin-right: 12px
 
       .title
@@ -575,6 +636,10 @@ export default {
 
           .title
             color: var(--button_primary)
+
+        &.disabled
+          opacity: .5
+          cursor: not-allowed
 
         .title
           align-self: stretch
