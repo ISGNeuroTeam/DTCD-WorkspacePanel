@@ -23,7 +23,7 @@
         @click="item.clickable && getElementList(item.path)"
       >
         <div class="title">
-          <span v-if="item.clickable" v-text="item.title"/>
+          <span v-if="item.clickable" v-text="item.title" />
           <span v-else class="FontIcon name_moreHorizontal"></span>
         </div>
       </div>
@@ -55,7 +55,7 @@
               :checked="filter.checked"
               @change="filter.checked = $event.target.value"
             >
-              <span class="menu-item-title" v-text="filter.title"/>
+              <span class="menu-item-title" v-text="filter.title" />
             </base-checkbox>
           </nav>
         </base-dropdown>
@@ -65,7 +65,7 @@
           <span slot="toggle-btn" class="toggle-btn">
             <span class="FontIcon name_sort size_lg"></span>
             <span class="title">Сортировка:</span>
-            <span class="subtitle" v-text="sortTitle"/>
+            <span class="subtitle" v-text="sortTitle" />
           </span>
           <nav class="dropdown-menu">
             <span
@@ -95,13 +95,9 @@
     <div class="element-list-wrapper">
       <div v-if="elementsToShow.length < 1" class="element-list-placeholder">
         <span :class="['FontIcon icon', placeholderData.icon]"></span>
-        <span class="title" v-text="placeholderData.title"/>
+        <span class="title" v-text="placeholderData.title" />
       </div>
-      <div
-        class="element-list"
-        :style="{ gridTemplateColumns }"
-        @click.self="selectWorkspaceElement(null)"
-      >
+      <div class="element-list" :style="{ gridTemplateColumns }" @click.self="selectWorkspaceElement(null)">
         <div
           v-for="elem in elementsToShow"
           :key="elem.id"
@@ -110,9 +106,9 @@
           @click="selectWorkspaceElement(elem)"
           @dblclick="elem.permissions.read && openElem(elem)"
         >
-          <WorkspaceElementIcon v-if="elem.is_dir" :isFolder="elem.is_dir"/>
-          <WorkspaceElementIcon v-else :icon="elem.meta.icon" :colors="elem.meta.color"/>
-          <span class="title" v-text="elem.title"/>
+          <WorkspaceElementIcon v-if="elem.is_dir" :isFolder="elem.is_dir" />
+          <WorkspaceElementIcon v-else :icon="elem.meta.icon" :colors="elem.meta.color" />
+          <span class="title" v-text="elem.title" />
         </div>
       </div>
     </div>
@@ -123,6 +119,7 @@
 import ModalWindow from '@/components/ModalWindow';
 import WorkspaceElementIcon from '@/components/WorkspaceElementIcon';
 import elementSizes from './../utils/elementSizes';
+import utf8_to_base64 from './../libs/utf8tobase64';
 
 export default {
   name: 'WorkspacePanel',
@@ -147,7 +144,7 @@ export default {
     sortList: [
       { title: 'По алфавиту', type: 'title' },
       { title: 'По дате создания', type: 'creation_time' },
-      { title: 'По дате изменения', type: 'modification_time'},
+      { title: 'По дате изменения', type: 'modification_time' },
     ],
     disabledCreateBtn: true,
   }),
@@ -155,9 +152,9 @@ export default {
     elementsToShow() {
       if (this.elementList.length <= 0) return [];
 
-      const list = !this.search ? this.elementList : this.elementList.filter(
-        el => el.title.toLowerCase().includes(this.search.toLowerCase())
-      );
+      const list = !this.search
+        ? this.elementList
+        : this.elementList.filter(el => el.title.toLowerCase().includes(this.search.toLowerCase()));
 
       if (this.sortList.map(s => s.type).includes(this.sortBy)) {
         list.sort((a, b) => {
@@ -237,7 +234,7 @@ export default {
     sortTitle() {
       const sort = this.sortList.find(s => s.type === this.sortBy);
       return sort ? sort.title : '';
-    }
+    },
   },
   mounted() {
     this.getElementList();
@@ -246,7 +243,7 @@ export default {
     async getElementList(path = '') {
       this.logSystem.info(`Getting element list in workspace panel on path '${path}'.`);
 
-      const pathBase64 = btoa(path);
+      const pathBase64 = utf8_to_base64(path);
       this.isLoading = true;
       this.elementList = [];
       try {
@@ -257,10 +254,7 @@ export default {
           workspaceList = response.data;
           this.disabledCreateBtn = false;
         } else if (response.data instanceof Object) {
-          const {
-            current_directory = {},
-            content = [],
-          } = response.data;
+          const { current_directory = {}, content = [] } = response.data;
           workspaceList = content;
           this.disabledCreateBtn = current_directory.permissions?.create === false;
         } else {
@@ -276,7 +270,10 @@ export default {
           // TODO: delete this
           if (!item.permissions) {
             item.permissions = {
-              create: true, read: true, update: true, delete: true,
+              create: true,
+              read: true,
+              update: true,
+              delete: true,
             };
           }
         }
@@ -295,18 +292,18 @@ export default {
       this.selectedElement?.el?.classList.remove('selected');
 
       if (!elemData) {
-        return this.selectedElement = null;
+        return (this.selectedElement = null);
       }
 
-      const [el] = this.$refs[elemData.id]
+      const [el] = this.$refs[elemData.id];
       el.classList.add('selected');
 
       this.selectedElement = { ...elemData, el };
     },
 
     async createElement(data = {}) {
+      console.log(data);
       this.logSystem.info(`Creating element on path '${data.path}'.`);
-
       try {
         await this.$root.workspaceSystem.createEmptyConfiguration(data);
       } catch (error) {
@@ -320,12 +317,12 @@ export default {
       const { id, is_dir, path } = elem;
 
       this.logSystem.info(`Opening element on path '${path}'.`);
-      
+
       if (!is_dir) {
         if (path === '') {
           this.$root.router.navigate(`/workspaces/${id}`);
         } else {
-          this.$root.router.navigate(`/workspaces/${btoa(path)}:id=${id}`);
+          this.$root.router.navigate(`/workspaces/${utf8_to_base64(path)}:id=${id}`);
         }
       }
       this.getElementList(path);
@@ -344,14 +341,14 @@ export default {
       const { path, is_dir } = elem;
 
       this.logSystem.info(`Deleting element on path '${path}'.`);
-      
+
       try {
         if (!is_dir) {
-          const req = path === '' ? this.endpoint : this.endpoint + btoa(path);
+          const req = path === '' ? this.endpoint : this.endpoint + utf8_to_base64(path);
           await this.interactionSystem.DELETERequest(req, { data: [elem.id] });
           this.getElementList(path);
         } else {
-          await this.interactionSystem.DELETERequest(this.endpoint + btoa(path));
+          await this.interactionSystem.DELETERequest(this.endpoint + utf8_to_base64(path));
           this.getElementList(this.curPath);
         }
       } catch (error) {
@@ -368,34 +365,22 @@ export default {
     },
 
     async editElementData(data) {
-      const {
-        title,
-        description,
-        icon,
-        color,
-      } = data;
-      const {
-        id,
-        path,
-      } = this.selectedElement;
-      
+      const { title, description, icon, color } = data;
+      const { id, path } = this.selectedElement;
+
       this.logSystem.info(`Editing element data on path '${path}'.`);
 
       try {
         if (data.isFolder) {
-          await this.interactionSystem.PUTRequest(this.endpoint + `${btoa(path)}`, [
-            { new_title: title }
-          ]);
+          await this.interactionSystem.PUTRequest(this.endpoint + `${utf8_to_base64(path)}`, [{ new_title: title }]);
           this.getElementList();
           return;
         }
 
         const meta = { description, icon, color };
-  
-        await this.interactionSystem.PUTRequest(this.endpoint + `${btoa(path)}`, [
-          { id, title, meta }
-        ]);
-  
+
+        await this.interactionSystem.PUTRequest(this.endpoint + `${utf8_to_base64(path)}`, [{ id, title, meta }]);
+
         this.getElementList(path);
       } catch (error) {
         this.logSystem.error(`Error editing element on path '${path}': ${error.message}`);
@@ -405,18 +390,16 @@ export default {
 
     async exportConfiguration(elem) {
       const { id, path } = elem;
-      const pathBase64 = btoa(path);
+      const pathBase64 = utf8_to_base64(path);
 
       this.logSystem.info(`Exporting cofiguration on path '${path}'.`);
 
       try {
-        const { data: config } = await this.interactionSystem.GETRequest(
-          this.endpoint + `${pathBase64}?id=${id}`
-        );
-  
+        const { data: config } = await this.interactionSystem.GETRequest(this.endpoint + `${pathBase64}?id=${id}`);
+
         const configJson = JSON.stringify(config, null, 2);
         const configBlob = new Blob([configJson], { type: 'application/text' });
-  
+
         const link = document.createElement('a');
         link.setAttribute('href', URL.createObjectURL(configBlob));
         link.setAttribute('download', `${config.title}.json`);
@@ -454,10 +437,7 @@ export default {
       if ('id' in content) delete content.id;
 
       try {
-        await this.interactionSystem.POSTRequest(
-          this.endpoint + btoa(path),
-          [{ title, content }]
-        );
+        await this.interactionSystem.POSTRequest(this.endpoint + utf8_to_base64(path), [{ title, content }]);
       } catch (error) {
         this.logSystem.error(`Error importing cofiguration on path '${path}': ${error.message}`);
         throw error;
