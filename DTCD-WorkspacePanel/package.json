@@ -1,6 +1,6 @@
 {
   "name": "workspace-panel",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "main": "WorkspacePanel.js",
   "scripts": {
     "test": "jest",
