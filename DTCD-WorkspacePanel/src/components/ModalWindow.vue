@@ -4,7 +4,7 @@
       <div class="ModalWindow">
         <header class="ModalHeader">
           <base-heading theme="theme_subheaderSmall">
-            <h1>Новый элемент</h1>
+            <h1 v-text="windowTItle"/>
           </base-heading>
           <button
             type="button"
@@ -16,11 +16,11 @@
         </header>
 
         <section class="ModalBody">
-          <span class="ItemLabel">Добавить элемент</span>
-          <base-tabs @select="actionTabSelectHandler">
+          <span v-if="!isEditMode" class="ItemLabel">Добавить элемент</span>
+          <base-tabs ref="createModeType" @select="actionTabSelectHandler">
             <div slot="tab" tab-name="Новый">
-              <span class="ItemLabel">Тип элемента</span>
-              <base-tabs @select="elemTypeTabSelectHandler">
+              <span v-if="!isEditMode" class="ItemLabel">Тип элемента</span>
+              <base-tabs ref="elemType" @select="elemTypeTabSelectHandler">
                 <div slot="tab" tab-name="Дашборд">
                   <base-input
                     :value="title"
@@ -248,6 +248,7 @@ export default {
     icon: 0,
     placement: 'Домашняя',
     isFolder: false,
+    isEditMode: false,
     selectedActionTab: '',
     uploadedFile: null,
   }),
@@ -255,6 +256,10 @@ export default {
     mainColorSelectTitle() {
       const title = 'Выберите цвет';
       return this.backgroundMode === 'Сплошной' ? title : `${title} #1`;
+    },
+
+    windowTItle() {
+      return `${this.isEditMode ? 'Изменить' : 'Новый'} элемент`;
     },
   },
   mounted() {
@@ -269,6 +274,17 @@ export default {
 
     if (this.editParams.is_dir) {
       this.isFolder = true;
+      this.$nextTick(() => {
+        this.$refs.elemType.activeTab = 1;
+      });
+    }
+
+    if (this.editParams.isEditMode) {
+      this.isEditMode= true;
+      this.$nextTick(() => {
+        this.$refs.elemType.isNavbarVisible = false;
+        this.$refs.createModeType.isNavbarVisible = false;
+      });
     }
 
     if (color) {

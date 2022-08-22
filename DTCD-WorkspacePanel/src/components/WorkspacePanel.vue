@@ -359,7 +359,14 @@ export default {
     editElement(elem) {
       const { title, meta = {}, is_dir } = elem;
       const description = meta.description;
-      this.editElemParams = { title, description, is_dir, icon: meta.icon, color: meta.color };
+      this.editElemParams = {
+        title,
+        description,
+        is_dir,
+        icon: meta.icon,
+        color: meta.color,
+        isEditMode: true,
+      };
       this.openModal();
     },
 
