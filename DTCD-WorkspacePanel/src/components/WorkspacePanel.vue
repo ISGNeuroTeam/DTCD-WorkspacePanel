@@ -302,7 +302,6 @@ export default {
     },
 
     async createElement(data = {}) {
-      console.log(data);
       this.logSystem.info(`Creating element on path '${data.path}'.`);
       try {
         await this.$root.workspaceSystem.createEmptyConfiguration(data);
