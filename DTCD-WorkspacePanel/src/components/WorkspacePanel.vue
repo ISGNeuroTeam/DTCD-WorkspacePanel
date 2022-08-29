@@ -438,12 +438,12 @@ export default {
       const text = await this.readFile(file);
       const importedConfig = JSON.parse(text);
 
-      const { title, content } = importedConfig;
+      const { title, content, meta } = importedConfig;
 
       if ('id' in content) delete content.id;
 
       try {
-        await this.interactionSystem.POSTRequest(this.endpoint + utf8_to_base64(path), [{ title, content }]);
+        await this.interactionSystem.POSTRequest(this.endpoint + utf8_to_base64(path), [{ title, content, meta }]);
       } catch (error) {
         this.logSystem.error(`Error importing cofiguration on path '${path}': ${error.message}`);
         throw error;
