@@ -371,7 +371,7 @@ export default {
     },
 
     async editElementData(data) {
-      const { title, description, icon, color } = data;
+      const { title, description, icon, color, curPath } = data;
       const { id, path } = this.selectedElement;
 
       this.logSystem.info(`Editing element data on path '${path}'.`);
@@ -379,7 +379,7 @@ export default {
       try {
         if (data.isFolder) {
           await this.interactionSystem.PUTRequest(this.endpoint + `${utf8_to_base64(path)}`, [{ new_title: title }]);
-          this.getElementList();
+          this.getElementList(curPath);
           return;
         }
 
@@ -387,7 +387,7 @@ export default {
 
         await this.interactionSystem.PUTRequest(this.endpoint + `${utf8_to_base64(path)}`, [{ id, title, meta }]);
 
-        this.getElementList(path);
+        this.getElementList(curPath);
       } catch (error) {
         this.logSystem.error(`Error editing element on path '${path}': ${error.message}`);
         throw error;
