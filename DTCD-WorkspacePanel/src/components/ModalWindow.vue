@@ -202,8 +202,9 @@
               <base-file-loader
                 class="LoadImage"
                 label="Загрузить дашборд"
+                droppable
                 accept=".json"
-                description="Загрузить файл дашборда"
+                description="Загрузить файл дашборда в формате JSON"
                 :disabled="editParams"
                 @input="handleFile"
               >

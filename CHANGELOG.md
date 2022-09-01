@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - redirect to root folder after editing subfolder
+- drag and drop when importing dashboard file
 
 ## [0.6.1]
 
