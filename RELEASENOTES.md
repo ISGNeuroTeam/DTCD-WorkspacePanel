@@ -1,3 +1,10 @@
+# [0.7.0] - Bugfixes
+
+### Fixed
+
+- Redirect to root folder after editing subfolder.
+- Drag and drop when importing dashboard file.
+
 # [0.6.0] - Workspaces role model
 
 ## Added

@@ -202,8 +202,9 @@
               <base-file-loader
                 class="LoadImage"
                 label="Загрузить дашборд"
+                droppable
                 accept=".json"
-                description="Загрузить файл дашборда"
+                description="Загрузить файл дашборда в формате JSON"
                 :disabled="editParams"
                 @input="handleFile"
               >
@@ -302,28 +303,21 @@ export default {
     },
 
     saveEdited() {
-      if (this.editParams.is_dir) {
-        const { title, description, isFolder, placement } = this;
-        const data = { title, description, isFolder, placement };
-        this.$emit('editElement', data);
-        this.close();
-        return;
-      }
-
       if (this.title === '') {
         alert('Название не может быть пустым');
         return;
       }
 
-      const { title, description, mainColor, secondColor, icon, isFolder, placement } = this;
+      const { title, description, isFolder, curPath } = this;
+      const data = { title, description, isFolder, curPath };
 
-      const color = this.backgroundMode === 'Сплошной'
-        ? [mainColor]
-        : [mainColor, secondColor];
+      if (!isFolder) {
+        const { mainColor, secondColor, icon } = this;
+        const isFill = this.backgroundMode === 'Сплошной';
+        data.icon = icon;
+        data.color = isFill ? [mainColor] : [mainColor, secondColor];
+      }
 
-      const path = placement === 'Домашняя' ? '' : placement;
-
-      const data = { title, description, color, icon, isFolder, path };
       this.$emit('editElement', data);
       this.close();
     },
