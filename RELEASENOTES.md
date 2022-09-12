@@ -1,6 +1,12 @@
+# [0.8.0]
+
+## Fixed
+
+- Workspace color and icon not imported.
+
 # [0.7.0] - Bugfixes
 
-### Fixed
+## Fixed
 
 - Redirect to root folder after editing subfolder.
 - Drag and drop when importing dashboard file.
