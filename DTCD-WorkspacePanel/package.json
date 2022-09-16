@@ -1,7 +1,7 @@
 {
   "name": "workspace-panel",
-  "version": "0.7.0",
-  "main": "WorkspacePanel.js",
+  "version": "0.8.0",
+  "main": "Plugin.js",
   "scripts": {
     "test": "jest",
     "dev": "rollup -cw",
