@@ -46,6 +46,7 @@ export class WorkspacePanel extends AppPanelPlugin {
       plugin: this,
       router,
       logSystem: this.#logSystem,
+      notificationSystem: Application.autocomplete.NotificationSystem,
     };
 
     const panel = new VueJS({
