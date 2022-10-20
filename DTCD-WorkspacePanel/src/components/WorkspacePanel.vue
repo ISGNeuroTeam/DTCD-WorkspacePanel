@@ -312,13 +312,20 @@ export default {
     },
 
     async createElement(data = {}) {
-      this.logSystem.info(`Creating element on path '${data.path}'.`);
-      
+      const {
+        isFolder,
+        title,
+        path,
+      } = data;
+
+      this.logSystem.info(`Creating element on path '${path}'.`);
+
       try {
         await this.$root.workspaceSystem.createEmptyConfiguration(data);
 
-        const successMsg = (data.isFolder ? 'Папка' : 'Дашборд')
-                            + ` '${data.title}' добавлен в текущую директорию.`;
+        const successMsg = isFolder
+                        ? `Папка '${title}' добавлена в текущую директорию.`
+                        : `Рабочий стол '${title}' добавлен в текущую директорию.`;
         this.notificationSystem.create(
           'Готово',
           successMsg,
@@ -329,8 +336,9 @@ export default {
           }
         );
       } catch (error) {
-        this.logSystem.error(`Error creating element on path '${data.path}': ${error.message}`);
-        const errorMsg = 'Произошла ошибка создания ' + (data.isFolder ? 'папки' : 'дашборда') + '.';
+        this.logSystem.error(`Error creating element on path '${path}': ${error.message}`);
+        const errorMsg = 'Произошла ошибка создания '
+                        + (isFolder ? 'папки' : 'рабочего стола') + '.';
         this.notificationSystem.create(
           'Error in workspaces!',
           errorMsg,
@@ -346,7 +354,11 @@ export default {
     },
 
     async openElem(elem) {
-      const { id, is_dir, path } = elem;
+      const {
+        id,
+        is_dir,
+        path,
+      } = elem;
 
       this.logSystem.info(`Opening element on path '${path}'.`);
 
@@ -389,8 +401,9 @@ export default {
           this.getElementList(this.curPath);
         }
 
-        const successMsg = (is_dir ? 'Папка' : 'Дашборд')
-                            + ` '${title}' (ID ${id}) успешно удален.`;
+        const successMsg = is_dir
+                          ? `Папка '${title}' (ID ${id}) успешно удалена.`
+                          : `Рабочий стол '${title}' (ID ${id}) успешно удален.`;
         this.notificationSystem.create(
           'Готово',
           successMsg,
@@ -402,7 +415,8 @@ export default {
         );
       } catch (error) {
         this.logSystem.error(`Error deleting element on path '${path}': ${error.message}`);
-        const errorMsg = 'Произошла ошибка создания ' + (is_dir ? 'папки' : 'дашборда') + '.';
+        const errorMsg = 'Произошла ошибка удаления '
+                        + (is_dir ? 'папки' : 'рабочего стола') + '.';
         this.notificationSystem.create(
           'Error in workspaces',
           errorMsg,
@@ -456,8 +470,9 @@ export default {
 
         this.getElementList(curPath);
 
-        const successMsg = 'Редактирование ' + (isFolder ? 'папки' : 'дашборда')
-                            + ` '${title}' (ID ${id}) успешно завершено.`;
+        const successMsg = 'Редактирование иконки '
+                          + (isFolder ? 'папки' : 'рабочего стола')
+                          + ` '${title}' (ID ${id}) успешно завершено.`;
         this.notificationSystem.create(
           'Готово',
           successMsg,
@@ -470,7 +485,7 @@ export default {
       } catch (error) {
         this.logSystem.error(`Error editing element on path '${path}': ${error.message}`);
         const errorMsg = 'Произошла ошибка в процессе редактирования иконки '
-                          + (isFolder ? 'папки' : 'дашборда') + '.';
+                        + (isFolder ? 'папки' : 'рабочего стола') + '.';
         this.notificationSystem.create(
           'Error in workspaces',
           errorMsg,
@@ -509,8 +524,9 @@ export default {
         link.click();
         document.body.removeChild(link);
 
-        const successMsg = 'Экспорт настроек ' + (is_dir ? 'папки' : 'дашборда')
-                            + ` '${title}' (ID ${id}) успешно завершен.`;
+        const successMsg = 'Экспорт настроек '
+                          + (is_dir ? 'папки' : 'рабочего стола')
+                          + ` '${title}' (ID ${id}) успешно завершен.`;
         this.notificationSystem.create(
           'Готово',
           successMsg,
@@ -522,8 +538,8 @@ export default {
         );
       } catch (error) {
         this.logSystem.error(`Error exporting cofiguration on path '${path}': ${error.message}`);
-        const errorMsg = 'Произошла ошибка в процессе экспортирования настроек иконки '
-                          + (is_dir ? 'папки' : 'дашборда') + '.';
+        const errorMsg = 'Произошла ошибка в процессе экспортирования настроек '
+                        + (is_dir ? 'папки' : 'рабочего стола') + '.';
         this.notificationSystem.create(
           'Error in workspaces',
           errorMsg,
@@ -563,7 +579,7 @@ export default {
 
         await this.interactionSystem.POSTRequest(this.endpoint + utf8_to_base64(path), [{ title, content, meta }]);
         
-        const successMsg = `Импорт настроек иконки '${title}' успешно завершен.`;
+        const successMsg = `Импорт настроек '${title}' успешно завершен.`;
         this.notificationSystem.create(
           'Готово',
           successMsg,
@@ -575,7 +591,7 @@ export default {
         );
       } catch (error) {
         this.logSystem.error(`Error importing cofiguration on path '${path}': ${error.message}`);
-        const errorMsg = 'Произошла ошибка в процессе импортирования настроек иконки.';
+        const errorMsg = 'Произошла ошибка в процессе импортирования настроек рабочего стола или папки.';
         this.notificationSystem.create(
           'Error in workspaces',
           errorMsg,
