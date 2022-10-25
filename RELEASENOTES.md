@@ -1,3 +1,9 @@
+# [0.9.0]
+
+## Added
+
+- Notifications for some user actions.
+
 # [0.8.0]
 
 ## Fixed
