@@ -25,18 +25,20 @@
                   <base-input
                     :value="title"
                     class="FieldName"
-                    label="Название (23 знака)"
+                    label="Название (25 знаков)"
                     placeholder="Введите название"
                     @input="title = $event.target.value"
+                    maxlength="25"
                   >
                   </base-input>
                   <base-textarea
                     :value="description"
                     theme="resize_off"
                     class="FieldDescription"
-                    label="Описание (200 знака)"
+                    label="Описание (200 знаков)"
                     placeholder="Введите описание"
                     @input="description = $event.target.value"
+                    maxlength="200"
                   >
                   </base-textarea>
                   <!-- COMMENTED FOR FUTURE -->
