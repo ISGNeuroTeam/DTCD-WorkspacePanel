@@ -25,10 +25,9 @@
                   <base-input
                     :value="title"
                     class="FieldName"
-                    label="Название (25 знаков)"
+                    label="Название"
                     placeholder="Введите название"
                     @input="title = $event.target.value"
-                    maxlength="25"
                   >
                   </base-input>
                   <base-textarea
@@ -124,7 +123,7 @@
                   <base-input
                     :value="title"
                     class="FieldName"
-                    label="Название (23 знака)"
+                    label="Название"
                     placeholder="Введите название"
                     @input="title = $event.target.value"
                   ></base-input>
@@ -133,9 +132,10 @@
                     :value="description"
                     theme="resize_off"
                     class="FieldDescription"
-                    label="Описание (200 знака)"
+                    label="Описание (200 знаков)"
                     placeholder="Введите описание"
                     @input="description = $event.target.value"
+                    maxlength="200"
                   ></base-textarea>
 
                   <!-- COMMENTED FOR FUTURE -->

@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- length limit in title and description
+- length limit in description
 
 ## [0.9.0]
 
