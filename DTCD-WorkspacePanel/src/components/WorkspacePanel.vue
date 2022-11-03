@@ -108,7 +108,9 @@
         >
           <WorkspaceElementIcon v-if="elem.is_dir" :isFolder="elem.is_dir" />
           <WorkspaceElementIcon v-else :icon="elem.meta.icon" :colors="elem.meta.color" />
-          <span class="title" v-text="elem.title" />
+          <base-tooltip class="ElementTooltip" :content="elem.title"  placement="bottom">
+            <span class="title type_dashboard" v-text="elem.title" />
+          </base-tooltip>
         </div>
       </div>
     </div>
@@ -782,11 +784,19 @@ export default {
           opacity: .5
           cursor: not-allowed
 
-        .title
+        .ElementTooltip
           align-self: stretch
           margin-top: 6px
           text-align: center
           overflow-wrap: break-word
           padding: 0 4px 2px
           transition: color .3s
+
+        .title
+
+          &.type_dashboard
+            white-space: nowrap
+            overflow: hidden
+            display: block
+            text-overflow: ellipsis
 </style>
