@@ -538,8 +538,7 @@ export default {
         );
       } catch (error) {
         this.logSystem.error(`Error exporting cofiguration on path '${path}': ${error.message}`);
-        const errorMsg = 'Произошла ошибка в процессе экспортирования '
-                        + (is_dir ? 'папки' : 'рабочего стола') + '.';
+        const errorMsg = 'Произошла ошибка в процессе экспортирования рабочего стола или папки.';
         this.notificationSystem.create(
           'Error in workspaces',
           errorMsg,
