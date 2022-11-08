@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- truncate title with ellipsis
+- filter which cutting dashboard title
 - tooltip to title
 
 ## [0.9.0]

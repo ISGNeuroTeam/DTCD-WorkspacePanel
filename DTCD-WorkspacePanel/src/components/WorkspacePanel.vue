@@ -109,7 +109,7 @@
           <WorkspaceElementIcon v-if="elem.is_dir" :isFolder="elem.is_dir" />
           <WorkspaceElementIcon v-else :icon="elem.meta.icon" :colors="elem.meta.color" />
           <base-tooltip class="ElementTooltip" :content="elem.title"  placement="bottom">
-            <span class="title type_dashboard" v-text="elem.title" />
+            <span class="title type_dashboard">{{ elem.title | truncate( 21, '...') }}</span>
           </base-tooltip>
         </div>
       </div>
@@ -609,6 +609,15 @@ export default {
       this.getElementList(path);
     },
   },
+  filters: {
+    truncate: function (text, length, suffix) {
+      if (text.length > length) {
+        return text.substring(0, length) + suffix;
+      } else {
+        return text;
+      }
+    },
+  },
 };
 </script>
 
@@ -791,12 +800,4 @@ export default {
           overflow-wrap: break-word
           padding: 0 4px 2px
           transition: color .3s
-
-        .title
-
-          &.type_dashboard
-            white-space: nowrap
-            overflow: hidden
-            display: block
-            text-overflow: ellipsis
 </style>
