@@ -759,7 +759,6 @@ export default {
       gap: 50px
       justify-content: space-between
       align-items: start
-      overflow: auto
 
       @media (max-width: 600px)
         justify-content: space-around
