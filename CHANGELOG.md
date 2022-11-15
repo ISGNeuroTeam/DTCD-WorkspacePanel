@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- length limit in description
+- length limit in description and title
 - filter which cutting dashboard title
 - tooltip to title
 
