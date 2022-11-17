@@ -25,9 +25,10 @@
                   <base-input
                     :value="title"
                     class="FieldName"
-                    label="Название"
+                    label="Название (170 знаков)"
                     placeholder="Введите название"
                     @input="title = $event.target.value"
+                    maxlength="170"
                   >
                   </base-input>
                   <base-textarea
@@ -123,9 +124,10 @@
                   <base-input
                     :value="title"
                     class="FieldName"
-                    label="Название"
+                    label="Название (170 знаков)"
                     placeholder="Введите название"
                     @input="title = $event.target.value"
+                    maxlength="170"
                   ></base-input>
 
                   <base-textarea
