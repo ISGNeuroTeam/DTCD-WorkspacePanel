@@ -1,3 +1,15 @@
+# [0.10.0]
+
+### Added
+
+- Length limit in description and title of workspace element.
+- Cropping long name of workspace element.
+- Tooltip to workspace element title.
+
+### Fixed
+
+- Notification text of import/export workspaces.
+
 # [0.9.0]
 
 ## Added
