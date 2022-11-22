@@ -108,7 +108,9 @@
         >
           <WorkspaceElementIcon v-if="elem.is_dir" :isFolder="elem.is_dir" />
           <WorkspaceElementIcon v-else :icon="elem.meta.icon" :colors="elem.meta.color" />
-          <span class="title" v-text="elem.title" />
+          <base-tooltip class="ElementTooltip" :content="elem.title"  placement="bottom">
+            <span class="title type_dashboard">{{ elem.title | truncate( 21, '...') }}</span>
+          </base-tooltip>
         </div>
       </div>
     </div>
@@ -524,7 +526,7 @@ export default {
         link.click();
         document.body.removeChild(link);
 
-        const successMsg = 'Экспорт настроек '
+        const successMsg = 'Экспорт '
                           + (is_dir ? 'папки' : 'рабочего стола')
                           + ` '${title}' (ID ${id}) успешно завершен.`;
         this.notificationSystem.create(
@@ -538,8 +540,7 @@ export default {
         );
       } catch (error) {
         this.logSystem.error(`Error exporting cofiguration on path '${path}': ${error.message}`);
-        const errorMsg = 'Произошла ошибка в процессе экспортирования настроек '
-                        + (is_dir ? 'папки' : 'рабочего стола') + '.';
+        const errorMsg = 'Произошла ошибка в процессе экспортирования рабочего стола или папки.';
         this.notificationSystem.create(
           'Error in workspaces',
           errorMsg,
@@ -572,14 +573,21 @@ export default {
   
         const text = await this.readFile(file);
         const importedConfig = JSON.parse(text);
-  
-        const { title, content, meta } = importedConfig;
+        
+        const {
+          title,
+          content,
+          meta,
+          is_dir,
+        } = importedConfig;
   
         if ('id' in content) delete content.id;
 
         await this.interactionSystem.POSTRequest(this.endpoint + utf8_to_base64(path), [{ title, content, meta }]);
         
-        const successMsg = `Импорт настроек '${title}' успешно завершен.`;
+        const successMsg = 'Импорт '
+                          + (is_dir ? 'папки' : 'рабочего стола')
+                          + ` '${title}' успешно завершен.`;
         this.notificationSystem.create(
           'Готово',
           successMsg,
@@ -591,7 +599,7 @@ export default {
         );
       } catch (error) {
         this.logSystem.error(`Error importing cofiguration on path '${path}': ${error.message}`);
-        const errorMsg = 'Произошла ошибка в процессе импортирования настроек рабочего стола или папки.';
+        const errorMsg = 'Произошла ошибка в процессе импортирования рабочего стола или папки.';
         this.notificationSystem.create(
           'Error in workspaces',
           errorMsg,
@@ -605,6 +613,15 @@ export default {
       }
 
       this.getElementList(path);
+    },
+  },
+  filters: {
+    truncate: function (text, length, suffix) {
+      if (text.length > length) {
+        return text.substring(0, length) + suffix;
+      } else {
+        return text;
+      }
     },
   },
 };
@@ -748,7 +765,6 @@ export default {
       gap: 50px
       justify-content: space-between
       align-items: start
-      overflow: auto
 
       @media (max-width: 600px)
         justify-content: space-around
@@ -782,7 +798,7 @@ export default {
           opacity: .5
           cursor: not-allowed
 
-        .title
+        .ElementTooltip
           align-self: stretch
           margin-top: 6px
           text-align: center
