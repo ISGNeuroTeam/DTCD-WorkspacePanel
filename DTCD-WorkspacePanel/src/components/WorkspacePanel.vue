@@ -472,7 +472,7 @@ export default {
 
         this.getElementList(curPath);
 
-        const successMsg = 'Редактирование иконки '
+        const successMsg = 'Редактирование свойств '
                           + (isFolder ? 'папки' : 'рабочего стола')
                           + ` '${title}' (ID ${id}) успешно завершено.`;
         this.notificationSystem.create(
@@ -486,7 +486,7 @@ export default {
         );
       } catch (error) {
         this.logSystem.error(`Error editing element on path '${path}': ${error.message}`);
-        const errorMsg = 'Произошла ошибка в процессе редактирования иконки '
+        const errorMsg = 'Произошла ошибка в процессе редактирования свойств '
                         + (isFolder ? 'папки' : 'рабочего стола') + '.';
         this.notificationSystem.create(
           'Error in workspaces',
