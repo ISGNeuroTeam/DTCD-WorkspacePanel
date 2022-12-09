@@ -1,3 +1,9 @@
+# [0.11.0]
+
+### Fixed
+
+- Notification text of editing dashboard properties
+
 # [0.10.0]
 
 ### Added
