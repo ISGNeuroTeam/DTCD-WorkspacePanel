@@ -155,10 +155,6 @@ export class WorkspacePanel extends AppPanelPlugin {
                   if (isDelete) {
                     await this.#vueComponent.deleteElement(selectedElement);
                     this.#eventSystem.publishEvent('WorkspaceDeleted', {guid: this.guid});
-
-                    if (selectedElement.is_dir) {
-                      navigation.navigate('/workspaces');
-                    }
                   }
                 }
                 : undefined,

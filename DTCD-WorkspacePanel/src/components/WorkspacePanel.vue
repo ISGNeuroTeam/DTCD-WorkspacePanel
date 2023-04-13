@@ -399,8 +399,9 @@ export default {
           await this.interactionSystem.DELETERequest(req, { data: [id] });
           this.getElementList(path);
         } else {
-          await this.interactionSystem.DELETERequest(this.endpoint + utf8_to_base64(path));
-          this.getElementList(this.curPath);
+          await this.interactionSystem.DELETERequest(this.endpoint + utf8_to_base64(path));        
+          this.getElementList(this.curPath.split('/').slice(0, - 1).join('/'));
+          this.selectedElement = '';      
         }
 
         const successMsg = is_dir
