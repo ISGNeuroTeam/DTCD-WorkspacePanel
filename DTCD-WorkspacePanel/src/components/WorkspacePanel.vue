@@ -243,6 +243,14 @@ export default {
     this.getElementList();
   },
   methods: {
+    async getUserGroups() {
+      return await this.interactionSystem.GETRequest('dtcd_utils/v1/user?photo_quality=low')
+      .then((response) => {
+        const groups = response.data.groups;
+        if (!groups.length) return[];
+        return groups
+      });
+    },
     async getElementList(path = '') {
       this.logSystem.info(`Getting element list in workspace panel on path '${path}'.`);
 
@@ -253,16 +261,21 @@ export default {
         const response = await this.interactionSystem.GETRequest(this.endpoint + pathBase64);
         let workspaceList;
 
+        const groups = await this.getUserGroups()
+        const groupsForWorkSpaces = groups.filter(group => group.name.includes('workspace.')).map((item) => item.name.split('.')[1])
+
         if (response?.data instanceof Array) {
-          workspaceList = response.data;
+          workspaceList = response.data
           this.disabledCreateBtn = false;
         } else if (response.data instanceof Object) {
           const { current_directory = {}, content = [] } = response.data;
-          workspaceList = content;
+          workspaceList = content.filter(item => !groupsForWorkSpaces.includes(item.title));
+          // workspaceList = content
           this.disabledCreateBtn = current_directory.permissions?.create === false;
         } else {
           throw new Error('Received invalid data from the server');
         }
+
 
         for (const item of workspaceList) {
           if (!item.is_dir && !item.meta) {
