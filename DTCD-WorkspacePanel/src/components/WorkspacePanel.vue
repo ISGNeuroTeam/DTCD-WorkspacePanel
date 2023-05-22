@@ -244,12 +244,14 @@ export default {
   },
   methods: {
     async getUserGroups() {
-      return await this.interactionSystem.GETRequest('dtcd_utils/v1/user?photo_quality=low')
-      .then((response) => {
-        const groups = response.data.groups;
-        if (!groups.length) return[];
-        return groups
-      });
+      const { data } = await this.interactionSystem.GETRequest('dtcd_utils/v1/user?photo_quality=low');
+      const { groups = [] } = data;
+
+      if (Array.isArray(groups) || !groups.length) {
+        return [];
+      }
+
+      return groups;
     },
     async getElementList(path = '') {
       this.logSystem.info(`Getting element list in workspace panel on path '${path}'.`);
@@ -578,26 +580,26 @@ export default {
 
     async importConfiguration(params = {}) {
       const { file, path = '' } = params;
-  
+
       try {
         if (!file) return;
-  
+
         this.logSystem.info(`Importing cofiguration on path '${path}'.`);
-  
+
         const text = await this.readFile(file);
         const importedConfig = JSON.parse(text);
-        
+
         const {
           title,
           content,
           meta,
           is_dir,
         } = importedConfig;
-  
+
         if ('id' in content) delete content.id;
 
         await this.interactionSystem.POSTRequest(this.endpoint + utf8_to_base64(path), [{ title, content, meta }]);
-        
+
         const successMsg = 'Импорт '
                           + (is_dir ? 'папки' : 'рабочего стола')
                           + ` '${title}' успешно завершен.`;
