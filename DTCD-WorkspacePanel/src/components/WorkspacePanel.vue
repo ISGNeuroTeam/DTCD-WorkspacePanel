@@ -247,7 +247,7 @@ export default {
       const { data } = await this.interactionSystem.GETRequest('dtcd_utils/v1/user?photo_quality=low');
       const { groups = [] } = data;
 
-      if (Array.isArray(groups) || !groups.length) {
+      if (!Array.isArray(groups) || !groups.length) {
         return [];
       }
 
