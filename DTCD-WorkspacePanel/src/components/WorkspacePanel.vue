@@ -243,6 +243,16 @@ export default {
     this.getElementList();
   },
   methods: {
+    async getUserGroups() {
+      const { data } = await this.interactionSystem.GETRequest('dtcd_utils/v1/user?photo_quality=low');
+      const { groups = [] } = data;
+
+      if (!Array.isArray(groups) || !groups.length) {
+        return [];
+      }
+
+      return groups;
+    },
     async getElementList(path = '') {
       this.logSystem.info(`Getting element list in workspace panel on path '${path}'.`);
 
@@ -253,16 +263,21 @@ export default {
         const response = await this.interactionSystem.GETRequest(this.endpoint + pathBase64);
         let workspaceList;
 
+        const groups = await this.getUserGroups()
+        const groupsForWorkSpaces = groups.filter(group => group.name.includes('workspace.')).map((item) => item.name.split('.')[1])
+
         if (response?.data instanceof Array) {
-          workspaceList = response.data;
+          workspaceList = response.data
           this.disabledCreateBtn = false;
         } else if (response.data instanceof Object) {
           const { current_directory = {}, content = [] } = response.data;
-          workspaceList = content;
+          workspaceList = content.filter(item => !groupsForWorkSpaces.includes(item.title));
+          // workspaceList = content
           this.disabledCreateBtn = current_directory.permissions?.create === false;
         } else {
           throw new Error('Received invalid data from the server');
         }
+
 
         for (const item of workspaceList) {
           if (!item.is_dir && !item.meta) {
@@ -565,26 +580,26 @@ export default {
 
     async importConfiguration(params = {}) {
       const { file, path = '' } = params;
-  
+
       try {
         if (!file) return;
-  
+
         this.logSystem.info(`Importing cofiguration on path '${path}'.`);
-  
+
         const text = await this.readFile(file);
         const importedConfig = JSON.parse(text);
-        
+
         const {
           title,
           content,
           meta,
           is_dir,
         } = importedConfig;
-  
+
         if ('id' in content) delete content.id;
 
         await this.interactionSystem.POSTRequest(this.endpoint + utf8_to_base64(path), [{ title, content, meta }]);
-        
+
         const successMsg = 'Импорт '
                           + (is_dir ? 'папки' : 'рабочего стола')
                           + ` '${title}' успешно завершен.`;
