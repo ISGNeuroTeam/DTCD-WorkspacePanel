@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-### Added
+### Removed
 
-- exiting from folder after deleting
+- ability to delete folder inside it
 
 ## [0.11.0]
 

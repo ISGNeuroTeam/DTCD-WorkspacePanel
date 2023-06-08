@@ -370,6 +370,9 @@ export default {
         } else {
           this.$root.router.navigate(`/workspaces/${utf8_to_base64(path)}:id=${id}`);
         }
+      } else {
+        this.selectWorkspaceElement(null)
+        this.$refs.panel.click()
       }
       this.getElementList(path);
     },
@@ -399,9 +402,8 @@ export default {
           await this.interactionSystem.DELETERequest(req, { data: [id] });
           this.getElementList(path);
         } else {
-          await this.interactionSystem.DELETERequest(this.endpoint + utf8_to_base64(path));        
-          this.getElementList(this.curPath.split('/').slice(0, - 1).join('/'));
-          this.selectedElement = '';      
+          await this.interactionSystem.DELETERequest(this.endpoint + utf8_to_base64(path));
+          this.getElementList(this.curPath);
         }
 
         const successMsg = is_dir
