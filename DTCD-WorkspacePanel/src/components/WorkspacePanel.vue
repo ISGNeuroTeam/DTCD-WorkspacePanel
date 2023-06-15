@@ -385,6 +385,9 @@ export default {
         } else {
           this.$root.router.navigate(`/workspaces/${utf8_to_base64(path)}:id=${id}`);
         }
+      } else {
+        this.selectWorkspaceElement(null)
+        this.$refs.panel.click()
       }
       this.getElementList(path);
     },
