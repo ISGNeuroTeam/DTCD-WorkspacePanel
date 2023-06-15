@@ -1,3 +1,9 @@
+# [0.12.0]
+
+### Added
+
+- Role model for workspaces
+
 # [0.11.0]
 
 ### Fixed

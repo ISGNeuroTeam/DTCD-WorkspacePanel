@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - ability to delete folder inside it
 
+## [0.12.0]
+
+### Added
+
+- role model for workspaces
+
+### Fixed
+
+- `getUserGroups()` method when groups are not received from the server
+
 ## [0.11.0]
 
 ### Fixed
