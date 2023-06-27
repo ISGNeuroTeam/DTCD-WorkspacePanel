@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- path as query parameter in order to remember path in history
+
 ### Removed
 
 - ability to delete folder inside it
