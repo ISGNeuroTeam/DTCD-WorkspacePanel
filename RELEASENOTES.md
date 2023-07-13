@@ -1,3 +1,17 @@
+# [0.13.0]
+
+## Added
+
+- Path as query parameter in order to remember path in history
+
+## Removed
+
+- Ability to delete folder inside it
+
+## Fixed
+
+- Back button returns to root folder
+
 # [0.12.0]
 
 ### Added
