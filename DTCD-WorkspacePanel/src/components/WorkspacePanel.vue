@@ -108,8 +108,8 @@
         >
           <WorkspaceElementIcon v-if="elem.is_dir" :isFolder="elem.is_dir" />
           <WorkspaceElementIcon v-else :icon="elem.meta.icon" :colors="elem.meta.color" />
-          <base-tooltip class="ElementTooltip" :content="elem.title"  placement="bottom">
-            <span class="title type_dashboard">{{ elem.title | truncate( 21, '...') }}</span>
+          <base-tooltip class="ElementTooltip" :content="elem.title" placement="bottom">
+            <span class="title type_dashboard">{{ elem.title | truncate(21, '...') }}</span>
           </base-tooltip>
         </div>
       </div>
@@ -130,6 +130,7 @@ export default {
     interactionSystem: $root.interactionSystem,
     logSystem: $root.logSystem,
     notificationSystem: $root.notificationSystem,
+    router: $root.router,
     endpoint: '/dtcd_workspaces/v1/workspace/object/',
     isModalVisible: false,
     editElemParams: null,
@@ -240,7 +241,9 @@ export default {
     },
   },
   mounted() {
-    this.getElementList();
+    const queryParams = new URLSearchParams(location.search);
+    const path = queryParams.get('path');
+    this.getElementList(path || '');
   },
   methods: {
     async getUserGroups() {
@@ -263,11 +266,13 @@ export default {
         const response = await this.interactionSystem.GETRequest(this.endpoint + pathBase64);
         let workspaceList;
 
-        const groups = await this.getUserGroups()
-        const groupsForWorkSpaces = groups.filter(group => group.name.includes('workspace.')).map((item) => item.name.split('.')[1])
+        const groups = await this.getUserGroups();
+        const groupsForWorkSpaces = groups
+          .filter(group => group.name.includes('workspace.'))
+          .map(item => item.name.split('.')[1]);
 
         if (response?.data instanceof Array) {
-          workspaceList = response.data
+          workspaceList = response.data;
           this.disabledCreateBtn = false;
         } else if (response.data instanceof Object) {
           const { current_directory = {}, content = [] } = response.data;
@@ -277,7 +282,6 @@ export default {
         } else {
           throw new Error('Received invalid data from the server');
         }
-
 
         for (const item of workspaceList) {
           if (!item.is_dir && !item.meta) {
@@ -298,17 +302,18 @@ export default {
 
         this.curPath = path;
         this.elementList = workspaceList;
+
+        if (path.length > 0) {
+          const encodedPath = encodeURIComponent(path);
+          this.router.replace(`${location.pathname}?path=${encodedPath}`);
+        } else this.router.replace(`${location.pathname}`);
       } catch (error) {
         this.logSystem.error(`Error getting element list on path '${path}': ${error.message}`);
-        this.notificationSystem.create(
-          'Error in workspaces',
-          `Произошла ошибка получения списка рабочих столов.`,
-          {
-            floatMode: true,
-            floatTime: 5,
-            type: 'error',
-          }
-        );
+        this.notificationSystem.create('Error in workspaces', `Произошла ошибка получения списка рабочих столов.`, {
+          floatMode: true,
+          floatTime: 5,
+          type: 'error',
+        });
         throw error;
       } finally {
         this.isLoading = false;
@@ -329,11 +334,7 @@ export default {
     },
 
     async createElement(data = {}) {
-      const {
-        isFolder,
-        title,
-        path,
-      } = data;
+      const { isFolder, title, path } = data;
 
       this.logSystem.info(`Creating element on path '${path}'.`);
 
@@ -341,52 +342,42 @@ export default {
         await this.$root.workspaceSystem.createEmptyConfiguration(data);
 
         const successMsg = isFolder
-                        ? `Папка '${title}' добавлена в текущую директорию.`
-                        : `Рабочий стол '${title}' добавлен в текущую директорию.`;
-        this.notificationSystem.create(
-          'Готово',
-          successMsg,
-          {
-            floatMode: true,
-            floatTime: 5,
-            type: 'success',
-          }
-        );
+          ? `Папка '${title}' добавлена в текущую директорию.`
+          : `Рабочий стол '${title}' добавлен в текущую директорию.`;
+        this.notificationSystem.create('Готово', successMsg, {
+          floatMode: true,
+          floatTime: 5,
+          type: 'success',
+        });
       } catch (error) {
         this.logSystem.error(`Error creating element on path '${path}': ${error.message}`);
-        const errorMsg = 'Произошла ошибка создания '
-                        + (isFolder ? 'папки' : 'рабочего стола') + '.';
-        this.notificationSystem.create(
-          'Error in workspaces!',
-          errorMsg,
-          {
-            floatMode: true,
-            floatTime: 5,
-            type: 'error',
-          }
-        );
+        const errorMsg = 'Произошла ошибка создания ' + (isFolder ? 'папки' : 'рабочего стола') + '.';
+        this.notificationSystem.create('Error in workspaces!', errorMsg, {
+          floatMode: true,
+          floatTime: 5,
+          type: 'error',
+        });
       }
 
       this.getElementList(data.path);
     },
 
     async openElem(elem) {
-      const {
-        id,
-        is_dir,
-        path,
-      } = elem;
+      const { id, is_dir, path } = elem;
 
       this.logSystem.info(`Opening element on path '${path}'.`);
 
       if (!is_dir) {
         if (path === '') {
-          this.$root.router.navigate(`/workspaces/${id}`);
+          this.router.navigate(`/workspaces/${id}`);
         } else {
-          this.$root.router.navigate(`/workspaces/${utf8_to_base64(path)}:id=${id}`);
+          this.router.navigate(`/workspaces/${utf8_to_base64(path)}:id=${id}`);
         }
+      } else {
+        this.selectWorkspaceElement(null);
+        this.$refs.panel.click();
+        this.getElementList(path);
       }
-      this.getElementList(path);
     },
 
     openModal() {
@@ -399,12 +390,7 @@ export default {
     },
 
     async deleteElement(elem) {
-      const {
-        title,
-        path,
-        is_dir,
-        id,
-      } = elem;
+      const { title, path, is_dir, id } = elem;
 
       this.logSystem.info(`Deleting element on path '${path}'.`);
 
@@ -419,30 +405,21 @@ export default {
         }
 
         const successMsg = is_dir
-                          ? `Папка '${title}' (ID ${id}) успешно удалена.`
-                          : `Рабочий стол '${title}' (ID ${id}) успешно удален.`;
-        this.notificationSystem.create(
-          'Готово',
-          successMsg,
-          {
-            floatMode: true,
-            floatTime: 5,
-            type: 'success',
-          }
-        );
+          ? `Папка '${title}' (ID ${id}) успешно удалена.`
+          : `Рабочий стол '${title}' (ID ${id}) успешно удален.`;
+        this.notificationSystem.create('Готово', successMsg, {
+          floatMode: true,
+          floatTime: 5,
+          type: 'success',
+        });
       } catch (error) {
         this.logSystem.error(`Error deleting element on path '${path}': ${error.message}`);
-        const errorMsg = 'Произошла ошибка удаления '
-                        + (is_dir ? 'папки' : 'рабочего стола') + '.';
-        this.notificationSystem.create(
-          'Error in workspaces',
-          errorMsg,
-          {
-            floatMode: true,
-            floatTime: 5,
-            type: 'error',
-          }
-        );
+        const errorMsg = 'Произошла ошибка удаления ' + (is_dir ? 'папки' : 'рабочего стола') + '.';
+        this.notificationSystem.create('Error in workspaces', errorMsg, {
+          floatMode: true,
+          floatTime: 5,
+          type: 'error',
+        });
         throw error;
       }
     },
@@ -462,18 +439,8 @@ export default {
     },
 
     async editElementData(data) {
-      const {
-        title,
-        description,
-        icon,
-        color,
-        curPath,
-        isFolder,
-      } = data;
-      const {
-        id,
-        path,
-      } = this.selectedElement;
+      const { title, description, icon, color, curPath, isFolder } = data;
+      const { id, path } = this.selectedElement;
 
       this.logSystem.info(`Editing element data on path '${path}'.`);
 
@@ -487,42 +454,30 @@ export default {
 
         this.getElementList(curPath);
 
-        const successMsg = 'Редактирование свойств '
-                          + (isFolder ? 'папки' : 'рабочего стола')
-                          + ` '${title}' (ID ${id}) успешно завершено.`;
-        this.notificationSystem.create(
-          'Готово',
-          successMsg,
-          {
-            floatMode: true,
-            floatTime: 5,
-            type: 'success',
-          }
-        );
+        const successMsg =
+          'Редактирование свойств ' +
+          (isFolder ? 'папки' : 'рабочего стола') +
+          ` '${title}' (ID ${id}) успешно завершено.`;
+        this.notificationSystem.create('Готово', successMsg, {
+          floatMode: true,
+          floatTime: 5,
+          type: 'success',
+        });
       } catch (error) {
         this.logSystem.error(`Error editing element on path '${path}': ${error.message}`);
-        const errorMsg = 'Произошла ошибка в процессе редактирования свойств '
-                        + (isFolder ? 'папки' : 'рабочего стола') + '.';
-        this.notificationSystem.create(
-          'Error in workspaces',
-          errorMsg,
-          {
-            floatMode: true,
-            floatTime: 5,
-            type: 'error',
-          }
-        );
+        const errorMsg =
+          'Произошла ошибка в процессе редактирования свойств ' + (isFolder ? 'папки' : 'рабочего стола') + '.';
+        this.notificationSystem.create('Error in workspaces', errorMsg, {
+          floatMode: true,
+          floatTime: 5,
+          type: 'error',
+        });
         throw error;
       }
     },
 
     async exportConfiguration(elem) {
-      const {
-        id,
-        path,
-        is_dir,
-        title,
-      } = elem;
+      const { id, path, is_dir, title } = elem;
       const pathBase64 = utf8_to_base64(path);
 
       this.logSystem.info(`Exporting cofiguration on path '${path}'.`);
@@ -541,30 +496,21 @@ export default {
         link.click();
         document.body.removeChild(link);
 
-        const successMsg = 'Экспорт '
-                          + (is_dir ? 'папки' : 'рабочего стола')
-                          + ` '${title}' (ID ${id}) успешно завершен.`;
-        this.notificationSystem.create(
-          'Готово',
-          successMsg,
-          {
-            floatMode: true,
-            floatTime: 5,
-            type: 'success',
-          }
-        );
+        const successMsg =
+          'Экспорт ' + (is_dir ? 'папки' : 'рабочего стола') + ` '${title}' (ID ${id}) успешно завершен.`;
+        this.notificationSystem.create('Готово', successMsg, {
+          floatMode: true,
+          floatTime: 5,
+          type: 'success',
+        });
       } catch (error) {
         this.logSystem.error(`Error exporting cofiguration on path '${path}': ${error.message}`);
         const errorMsg = 'Произошла ошибка в процессе экспортирования рабочего стола или папки.';
-        this.notificationSystem.create(
-          'Error in workspaces',
-          errorMsg,
-          {
-            floatMode: true,
-            floatTime: 5,
-            type: 'error',
-          }
-        );
+        this.notificationSystem.create('Error in workspaces', errorMsg, {
+          floatMode: true,
+          floatTime: 5,
+          type: 'error',
+        });
         throw error;
       }
     },
@@ -589,41 +535,26 @@ export default {
         const text = await this.readFile(file);
         const importedConfig = JSON.parse(text);
 
-        const {
-          title,
-          content,
-          meta,
-          is_dir,
-        } = importedConfig;
+        const { title, content, meta, is_dir } = importedConfig;
 
         if ('id' in content) delete content.id;
 
         await this.interactionSystem.POSTRequest(this.endpoint + utf8_to_base64(path), [{ title, content, meta }]);
 
-        const successMsg = 'Импорт '
-                          + (is_dir ? 'папки' : 'рабочего стола')
-                          + ` '${title}' успешно завершен.`;
-        this.notificationSystem.create(
-          'Готово',
-          successMsg,
-          {
-            floatMode: true,
-            floatTime: 5,
-            type: 'success',
-          }
-        );
+        const successMsg = 'Импорт ' + (is_dir ? 'папки' : 'рабочего стола') + ` '${title}' успешно завершен.`;
+        this.notificationSystem.create('Готово', successMsg, {
+          floatMode: true,
+          floatTime: 5,
+          type: 'success',
+        });
       } catch (error) {
         this.logSystem.error(`Error importing cofiguration on path '${path}': ${error.message}`);
         const errorMsg = 'Произошла ошибка в процессе импортирования рабочего стола или папки.';
-        this.notificationSystem.create(
-          'Error in workspaces',
-          errorMsg,
-          {
-            floatMode: true,
-            floatTime: 5,
-            type: 'error',
-          }
-        );
+        this.notificationSystem.create('Error in workspaces', errorMsg, {
+          floatMode: true,
+          floatTime: 5,
+          type: 'error',
+        });
         throw error;
       }
 

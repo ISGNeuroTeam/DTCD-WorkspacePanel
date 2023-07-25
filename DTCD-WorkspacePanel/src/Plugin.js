@@ -33,7 +33,7 @@ export class WorkspacePanel extends AppPanelPlugin {
 
     const interactionSystem = new InteractionSystemAdapter('0.4.0');
     const workspaceSystem = new WorkspaceSystemAdapter('0.4.0');
-    const router = new RouteSystemAdapter('0.1.0');
+    const router = new RouteSystemAdapter('0.4.0');
     this.#logSystem = new LogSystemAdapter('0.5.0', guid, pluginMeta.name);
 
     const { default: VueJS } = this.getDependence('Vue');
@@ -130,8 +130,8 @@ export class WorkspacePanel extends AppPanelPlugin {
               event: 'click',
               callback: permissions.update
                 ? () => {
-                  this.#vueComponent.editElement(selectedElement);
-                }
+                    this.#vueComponent.editElement(selectedElement);
+                  }
                 : undefined,
             },
           },
@@ -150,13 +150,14 @@ export class WorkspacePanel extends AppPanelPlugin {
               event: 'click',
               callback: permissions.delete
                 ? async () => {
-                  const elemType = selectedElement.is_dir ? 'папку' : 'дашборд';
-                  const isDelete = confirm(`Удалить ${elemType} "${selectedElement.title}"?`);
-                  if (isDelete) {
-                    await this.#vueComponent.deleteElement(selectedElement);
-                    this.#eventSystem.publishEvent('WorkspaceDeleted', {guid: this.guid});
+                    const elemType = selectedElement.is_dir ? 'папку' : 'дашборд';
+                    const isDelete = confirm(`Удалить ${elemType} "${selectedElement.title}"?`);
+                    if (isDelete) {
+                      await this.#vueComponent.deleteElement(selectedElement);
+                      this.#eventSystem.publishEvent('WorkspaceDeleted', { guid: this.guid });
+                      this.#vueComponent.selectWorkspaceElement(null);
+                    }
                   }
-                }
                 : undefined,
             },
           },
@@ -177,8 +178,8 @@ export class WorkspacePanel extends AppPanelPlugin {
             event: 'click',
             callback: permissions.read
               ? () => {
-                this.#vueComponent.exportConfiguration(selectedElement);
-              }
+                  this.#vueComponent.exportConfiguration(selectedElement);
+                }
               : undefined,
           },
         });
