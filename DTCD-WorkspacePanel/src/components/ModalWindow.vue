@@ -27,8 +27,9 @@
                     class="FieldName"
                     label="Название (170 знаков)"
                     placeholder="Введите название"
-                    @input="title = $event.target.value"
                     maxlength="170"
+                    :disabled="editParams"
+                    @input="title = $event.target.value"
                   >
                   </base-input>
                   <base-textarea
@@ -37,8 +38,8 @@
                     class="FieldDescription"
                     label="Описание (200 знаков)"
                     placeholder="Введите описание"
-                    @input="description = $event.target.value"
                     maxlength="200"
+                    @input="description = $event.target.value"
                   >
                   </base-textarea>
                   <!-- COMMENTED FOR FUTURE -->
@@ -126,18 +127,19 @@
                     class="FieldName"
                     label="Название (170 знаков)"
                     placeholder="Введите название"
-                    @input="title = $event.target.value"
                     maxlength="170"
-                  ></base-input>
-
+                    :disabled="editParams"
+                    @input="title = $event.target.value"
+                  >
+                  </base-input>
                   <base-textarea
                     :value="description"
                     theme="resize_off"
                     class="FieldDescription"
                     label="Описание (200 знаков)"
                     placeholder="Введите описание"
-                    @input="description = $event.target.value"
                     maxlength="200"
+                    @input="description = $event.target.value"
                   ></base-textarea>
 
                   <!-- COMMENTED FOR FUTURE -->
@@ -203,6 +205,15 @@
             </div> -->
 
             <div slot="tab" tab-name="Импортировать">
+              <base-input
+                :value="title"
+                class="FieldName"
+                label="Название (170 знаков)"
+                placeholder="Введите название"
+                maxlength="170"
+                @input="title = $event.target.value"
+              >
+              </base-input>
               <base-file-loader
                 class="LoadImage"
                 label="Загрузить дашборд"
@@ -272,12 +283,12 @@ export default {
 
     if (!this.editParams) return;
 
-    const { title, description, icon, color } = this.editParams;
+    const { title, description, icon, color, is_dir } = this.editParams.elemParams;
     this.title = title;
     this.description = description;
     this.icon = icon;
 
-    if (this.editParams.is_dir) {
+    if (is_dir) {
       this.isFolder = true;
       this.$nextTick(() => {
         this.$refs.elemType.activeTab = 1;
@@ -307,10 +318,7 @@ export default {
     },
 
     saveEdited() {
-      if (this.title === '') {
-        alert('Название не может быть пустым');
-        return;
-      }
+      if (this.title === '') return alert('Название не может быть пустым');
 
       const { title, description, isFolder, curPath } = this;
       const data = { title, description, isFolder, curPath };
@@ -327,19 +335,18 @@ export default {
     },
 
     saveNew() {
-      if (this.selectedActionTab === 'Импортировать') {
-        if (this.uploadedFile) {
-          this.$emit('importElement', {
-            path: this.curPath,
-            file: this.uploadedFile,
-          });
-        }
-        return this.close();
-      }
+      if (this.title === '') return alert('Название не может быть пустым');
 
-      if (this.title === '') {
-        alert('Название не может быть пустым');
-        return;
+      if (this.selectedActionTab === 'Импортировать') {
+        if (!this.uploadedFile) return alert('Файл не выбран');
+
+        this.$emit('importElement', {
+          title: this.title,
+          path: this.curPath,
+          file: this.uploadedFile,
+        });
+
+        return this.close();
       }
 
       const { title, description, mainColor, secondColor, icon, isFolder, placement } = this;

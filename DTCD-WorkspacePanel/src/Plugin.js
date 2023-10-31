@@ -5,7 +5,6 @@ import {
   AppPanelPlugin,
   InteractionSystemAdapter,
   EventSystemAdapter,
-  WorkspaceSystemAdapter,
   RouteSystemAdapter,
   LogSystemAdapter,
 } from './../../DTCD-SDK/index';
@@ -32,7 +31,8 @@ export class WorkspacePanel extends AppPanelPlugin {
     this.#eventSystem.registerPluginInstance(this, ['WorkspaceDeleted']);
 
     const interactionSystem = new InteractionSystemAdapter('0.4.0');
-    const workspaceSystem = new WorkspaceSystemAdapter('0.4.0');
+    const keycloak = this.getDependence('keycloak');
+
     const router = new RouteSystemAdapter('0.4.0');
     this.#logSystem = new LogSystemAdapter('0.5.0', guid, pluginMeta.name);
 
@@ -42,7 +42,7 @@ export class WorkspacePanel extends AppPanelPlugin {
       guid,
       interactionSystem,
       eventSystem,
-      workspaceSystem,
+      keycloak,
       plugin: this,
       router,
       logSystem: this.#logSystem,
@@ -150,7 +150,7 @@ export class WorkspacePanel extends AppPanelPlugin {
               event: 'click',
               callback: permissions.delete
                 ? async () => {
-                    const elemType = selectedElement.is_dir ? 'папку' : 'дашборд';
+                    const elemType = selectedElement.is_dir ? 'папку' : 'рабочий стол';
                     const isDelete = confirm(`Удалить ${elemType} "${selectedElement.title}"?`);
                     if (isDelete) {
                       await this.#vueComponent.deleteElement(selectedElement);
