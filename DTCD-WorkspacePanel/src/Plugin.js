@@ -1,5 +1,5 @@
 import pluginMeta from './Plugin.Meta';
-import PluginComponent from './PluginComponent.vue';
+import WorkspacePanelComponent from './components/WorkspacePanel.vue';
 
 import {
   AppPanelPlugin,
@@ -51,10 +51,10 @@ export class WorkspacePanel extends AppPanelPlugin {
 
     const panel = new VueJS({
       data: () => data,
-      render: h => h(PluginComponent),
+      render: h => h(WorkspacePanelComponent),
     }).$mount(selector);
 
-    this.#vueComponent = panel.$children[0].$children[0];
+    this.#vueComponent = panel.$children[0];
   }
 
   setPluginConfig(config) {
@@ -105,9 +105,9 @@ export class WorkspacePanel extends AppPanelPlugin {
         innerText: 'Выберете один из элементов рабочего стола',
       });
     } else {
-      const disabledAttrEditBtn = permissions.update ? {} : { disabled: true };
-      const disabledAttrDelBtn = permissions.delete ? {} : { disabled: true };
-      const disabledAttrExpoBtn = permissions.read ? {} : { disabled: true };
+      const disabledAttrEditBtn = permissions['dtcd_workspaces.update'] ? {} : { disabled: true };
+      const disabledAttrDelBtn = permissions['dtcd_workspaces.delete'] ? {} : { disabled: true };
+      const disabledAttrExpoBtn = permissions['dtcd_workspaces.read'] ? {} : { disabled: true };
 
       fields.push(
         ...[
@@ -128,7 +128,7 @@ export class WorkspacePanel extends AppPanelPlugin {
             },
             handler: {
               event: 'click',
-              callback: permissions.update
+              callback: permissions['dtcd_workspaces.update']
                 ? () => {
                     this.#vueComponent.editElement(selectedElement);
                   }
@@ -148,7 +148,7 @@ export class WorkspacePanel extends AppPanelPlugin {
             },
             handler: {
               event: 'click',
-              callback: permissions.delete
+              callback: permissions['dtcd_workspaces.delete']
                 ? async () => {
                     const elemType = selectedElement.is_dir ? 'папку' : 'рабочий стол';
                     const isDelete = confirm(`Удалить ${elemType} "${selectedElement.title}"?`);
@@ -176,7 +176,7 @@ export class WorkspacePanel extends AppPanelPlugin {
           },
           handler: {
             event: 'click',
-            callback: permissions.read
+            callback: permissions['dtcd_workspaces.read']
               ? () => {
                   this.#vueComponent.exportConfiguration(selectedElement);
                 }

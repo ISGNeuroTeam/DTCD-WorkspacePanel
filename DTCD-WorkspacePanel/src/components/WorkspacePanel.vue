@@ -102,9 +102,9 @@
           v-for="(elem, i) in elementsToShow"
           :key="`el_${i}`"
           :ref="`el_${i}`"
-          :class="['list-item', !elem.permissions.read && 'disabled']"
+          :class="['list-item', !elem.permissions['dtcd_workspaces.read'] && 'disabled']"
           @click="selectWorkspaceElement(elem, `el_${i}`)"
-          @dblclick="elem.permissions.read && openElem(elem)"
+          @dblclick="elem.permissions['dtcd_workspaces.read'] && openElem(elem)"
         >
           <WorkspaceElementIcon v-if="elem.is_dir" isFolder/>
           <WorkspaceElementIcon v-else :icon="elem.meta.icon" :colors="elem.meta.color" />
@@ -246,17 +246,6 @@ export default {
     this.getElementList(path || '');
   },
   methods: {
-    async getUserGroups() {
-      const { data } = await this.interactionSystem.GETRequest('dtcd_utils/v1/user?photo_quality=low');
-      const { groups = [] } = data;
-
-      if (!Array.isArray(groups) || !groups.length) {
-        return [];
-      }
-
-      return groups;
-    },
-
     async getElementList(path = '') {
       this.logSystem.info(`Getting element list in workspace panel on path '${path}'`);
 
@@ -269,51 +258,17 @@ export default {
 
         workspaces.forEach(w => {
           w.is_dir = false;
-          w.title = w.meta.title;
+          this.checkElemMeta(w);
         });
 
         directories.forEach(d => {
           d.is_dir = true;
-          d.title = d.meta.title;
+          this.checkElemMeta(d);
         });
 
         const workspaceList = [...workspaces, ...directories];
 
         this.disabledCreateBtn = false;
-
-        // const groups = await this.getUserGroups();
-        // const groupsForWorkSpaces = groups
-        //   .filter(group => group.name.includes('workspace.'))
-        //   .map(item => item.name.split('.')[1]);
-
-        // if (response?.data instanceof Array) {
-        //   workspaceList = response.data;
-        //   this.disabledCreateBtn = false;
-        // } else if (response.data instanceof Object) {
-        //   const { current_directory = {}, content = [] } = response.data;
-        //   workspaceList = content.filter(item => !groupsForWorkSpaces.includes(item.title));
-        //   this.disabledCreateBtn = current_directory.permissions?.create === false;
-        // } else {
-        //   throw new Error('Received invalid data from the server');
-        // }
-
-        for (const item of workspaceList) {
-          if (!item.is_dir && !item.meta) {
-            item.meta = { description: '', icon: 0, color: [0] };
-          } else if (item.is_dir && !item.meta) {
-            item.meta = { description: '' };
-          }
-          // TODO: delete this
-          if (!item.permissions) {
-            item.permissions = {
-              create: true,
-              read: true,
-              update: true,
-              delete: true,
-            };
-          }
-        }
-
         this.curPath = path;
         this.elementList = workspaceList;
 
@@ -333,6 +288,13 @@ export default {
       } finally {
         this.isLoading = false;
       }
+    },
+
+    checkElemMeta(elem) {
+      if (elem.meta) return;
+      elem.meta = elem.is_dir
+        ? { description: '' }
+        : { description: '', icon: 0, color: [0] };
     },
 
     selectWorkspaceElement(elemData, ref) {
@@ -469,10 +431,17 @@ export default {
     },
 
     async exportConfiguration(elem) {
-      const { path, title, meta, content } = elem;
-
       try {
-        this.logSystem.info(`Exporting cofiguration on path '${path}'`);
+        this.logSystem.info(`Exporting cofiguration on path '${elem.path}'`);
+
+        const url = `/workspace?path=${elem.path}&action=get`;
+        const request = await this.interactionSystem.GETRequest(this.endpoint + url);
+
+        const { title, meta, content } = request.data;
+
+        if (content.tabPanelsConfig) {
+          content.tabPanelsConfig?.tabsOptions?.forEach(opt => delete opt.permissions);
+        }
 
         const config = { title, meta, content };
         const configJson = JSON.stringify(config, null, 2);
@@ -483,7 +452,7 @@ export default {
         link.setAttribute('download', `${title}.json`);
         link.click();
       } catch (error) {
-        this.logSystem.error(`Error exporting cofiguration on path '${path}': ${error.message}`);
+        this.logSystem.error(`Error exporting cofiguration on path '${elem.path}': ${error.message}`);
         this.notificationSystem.create(
           'Ошибка экспорта',
           `Произошла ошибка в процессе экспорта рабочего стола: ${error.message}`,
